@@ -6,7 +6,11 @@ from __future__ import annotations
 import base64
 from io import BytesIO
 
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
+
+GRID_STEP_DEFAULT = 50
+GRID_COLOR = (255, 140, 0)
+BOX_COLOR = (255, 0, 0)
 
 
 class InvalidCropBox(Exception):
@@ -47,6 +51,36 @@ def crop_for_ocr(image: Image.Image, box: tuple[int, int, int, int], scale: int 
     if scale != 1:
         crop = crop.resize((crop.width * scale, crop.height * scale), Image.LANCZOS)
     return crop
+
+
+def draw_calibration_overlay(
+    image: Image.Image,
+    box: tuple[int, int, int, int] | None = None,
+    grid_step: int = GRID_STEP_DEFAULT,
+) -> Image.Image:
+    """Zwraca kopię zdjęcia z siatką współrzędnych (co grid_step px, z
+    podpisanymi osiami) i, jeśli podano, zaznaczoną aktualną ramką przycięcia.
+
+    Config_flow w Home Assistant nie umożliwia interaktywnego
+    zaznaczania/przeciągania prostokąta na obrazku (brak JS/canvas w
+    formularzu) - siatka to namiastka, która pozwala odczytać współrzędne
+    wzrokiem wprost ze zdjęcia zamiast zgadywać je w ciemno.
+    """
+    overlay = image.copy()
+    draw = ImageDraw.Draw(overlay)
+    font = ImageFont.load_default()
+
+    for x in range(0, overlay.width, grid_step):
+        draw.line([(x, 0), (x, overlay.height)], fill=GRID_COLOR, width=1)
+        draw.text((x + 2, 2), str(x), fill=GRID_COLOR, font=font)
+    for y in range(0, overlay.height, grid_step):
+        draw.line([(0, y), (overlay.width, y)], fill=GRID_COLOR, width=1)
+        draw.text((2, y + 2), str(y), fill=GRID_COLOR, font=font)
+
+    if box is not None:
+        draw.rectangle(box, outline=BOX_COLOR, width=3)
+
+    return overlay
 
 
 def to_jpeg_bytes(image: Image.Image, quality: int = 95) -> bytes:

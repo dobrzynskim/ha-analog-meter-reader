@@ -3,7 +3,16 @@ from io import BytesIO
 import pytest
 from PIL import Image
 
-from image import InvalidCropBox, crop_for_ocr, load_and_orient, to_data_uri, to_jpeg_bytes
+from image import (
+    BOX_COLOR,
+    GRID_COLOR,
+    InvalidCropBox,
+    crop_for_ocr,
+    draw_calibration_overlay,
+    load_and_orient,
+    to_data_uri,
+    to_jpeg_bytes,
+)
 
 
 def _make_test_image_bytes(width=20, height=10) -> bytes:
@@ -87,3 +96,40 @@ def test_to_data_uri_has_jpeg_prefix_and_decodes_back():
     decoded_bytes = base64.b64decode(uri.split(",", 1)[1])
     decoded = Image.open(BytesIO(decoded_bytes))
     assert decoded.size == image.size
+
+
+def _solid_image(width=100, height=100, color=(255, 255, 255)) -> Image.Image:
+    return Image.new("RGB", (width, height), color)
+
+
+def test_draw_calibration_overlay_does_not_mutate_original():
+    image = _solid_image()
+    original_pixel = image.getpixel((25, 25))
+
+    draw_calibration_overlay(image, box=None, grid_step=50)
+
+    assert image.getpixel((25, 25)) == original_pixel
+
+
+def test_draw_calibration_overlay_draws_grid_line_at_origin():
+    image = _solid_image()
+    overlay = draw_calibration_overlay(image, box=None, grid_step=50)
+    # Linia pionowa x=0 na całej wysokosci - punkt z dala od etykiet tekstowych.
+    assert overlay.getpixel((0, 80)) == GRID_COLOR
+
+
+def test_draw_calibration_overlay_leaves_area_between_gridlines_untouched():
+    image = _solid_image()
+    overlay = draw_calibration_overlay(image, box=None, grid_step=50)
+    # Punkt w połowie odstępu między liniami siatki (x=25,y=25) - poza zasięgiem
+    # etykiet (rysowanych tuż przy liniach) i poza samymi liniami.
+    assert overlay.getpixel((25, 25)) == (255, 255, 255)
+
+
+def test_draw_calibration_overlay_draws_box_outline():
+    image = _solid_image()
+    overlay = draw_calibration_overlay(image, box=(10, 10, 40, 40), grid_step=50)
+    # Środek górnej krawędzi ramki (x=25, y=10) powinien być czerwony.
+    assert overlay.getpixel((25, 10)) == BOX_COLOR
+    # Środek ramki na pewno poza obrysem - kolor tła bez zmian.
+    assert overlay.getpixel((25, 25)) == (255, 255, 255)

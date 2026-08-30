@@ -15,7 +15,7 @@
       },
       "crop": {
         "title": "Crop box calibration",
-        "description": "{image_preview}\n\nEnter the crop box coordinates (pixels) around the digit strip in the image above, save, and check the crop preview below. Repeat until the digits in the crop preview are readable - only then check \"Confirm\".",
+        "description": "{image_preview}\n\nThe image has a coordinate grid overlaid every 50px (orange) - read the digit strip's corner pixels off it. Enter them below and save: you'll see the box highlighted in red on the full image plus a separate crop preview, enlarged the way the AI sees it. Adjust the coordinates until the digits are readable - only then check \"Confirm\".",
         "data": {
           "crop_left": "Left edge (px)",
           "crop_top": "Top edge (px)",

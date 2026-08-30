@@ -40,7 +40,7 @@ from .const import (
     DEFAULT_UNIT_OF_MEASUREMENT,
     DOMAIN,
 )
-from .image import InvalidCropBox, crop_for_ocr, load_and_orient, to_data_uri
+from .image import InvalidCropBox, crop_for_ocr, draw_calibration_overlay, load_and_orient, to_data_uri
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -65,6 +65,7 @@ class AnalogMeterReaderConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self._data: dict[str, Any] = {}
         self._full_image = None  # PIL.Image, żywe między krokami tej samej sesji flow
         self._last_crop_preview_uri: str | None = None
+        self._last_crop_box: tuple[int, int, int, int] | None = None
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         errors: dict[str, str] = {}
@@ -108,6 +109,7 @@ class AnalogMeterReaderConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     crop_for_ocr, self._full_image, box, CROP_UPSCALE_FACTOR
                 )
                 self._last_crop_preview_uri = await self.hass.async_add_executor_job(to_data_uri, crop)
+                self._last_crop_box = box
             except InvalidCropBox:
                 errors["base"] = "invalid_crop"
             else:
@@ -138,8 +140,19 @@ class AnalogMeterReaderConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             }
         )
 
-        full_preview_uri = await self.hass.async_add_executor_job(to_data_uri, self._full_image)
-        image_md = f"Pełne zdjęcie ({width}x{height}px):\n\n![Pełne zdjęcie]({full_preview_uri})"
+        # Formularz HA nie umożliwia interaktywnego zaznaczania ramki (brak
+        # JS/canvas) - siatka współrzędnych co 50px + zaznaczenie ostatnio
+        # wpisanej ramki na czerwono to namiastka pozwalająca odczytać
+        # współrzędne wzrokiem, zamiast wpisywać je w ciemno.
+        overlay = await self.hass.async_add_executor_job(
+            draw_calibration_overlay, self._full_image, self._last_crop_box
+        )
+        full_preview_uri = await self.hass.async_add_executor_job(to_data_uri, overlay)
+        image_md = (
+            f"Pełne zdjęcie z siatką współrzędnych co 50px ({width}x{height}px)"
+            f"{' - czerwony prostokąt to ostatnio wpisana ramka' if self._last_crop_box else ''}:"
+            f"\n\n![Pełne zdjęcie]({full_preview_uri})"
+        )
         if self._last_crop_preview_uri:
             image_md += (
                 f"\n\n**Podgląd przycięcia (powiększony {CROP_UPSCALE_FACTOR}x"

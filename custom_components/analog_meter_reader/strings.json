@@ -15,7 +15,7 @@
       },
       "crop": {
         "title": "Kalibracja ramki przycięcia",
-        "description": "{image_preview}\n\nWpisz współrzędne (piksele) ramki wokół paska cyfr na powyższym zdjęciu, zapisz i sprawdź podgląd przycięcia poniżej. Powtarzaj, aż cyfry na podglądzie przycięcia będą czytelne - dopiero wtedy zaznacz \"Zatwierdź\".",
+        "description": "{image_preview}\n\nZdjęcie ma naniesioną siatkę współrzędnych co 50px (pomarańczowa) - odczytaj z niej piksele rogów paska cyfr. Wpisz je poniżej i zapisz: zobaczysz ramkę zaznaczoną na czerwono na pełnym zdjęciu oraz osobny podgląd samego przycięcia, powiększony tak, jak widzi go AI. Popraw współrzędne, aż cyfry będą czytelne - dopiero wtedy zaznacz \"Zatwierdź\".",
         "data": {
           "crop_left": "Lewa krawędź (px)",
           "crop_top": "Górna krawędź (px)",

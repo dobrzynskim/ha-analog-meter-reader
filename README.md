@@ -50,16 +50,21 @@ wartości).
 3. Ustawienia → Urządzenia i usługi → Dodaj integrację → "Analog Meter Reader".
 4. **Krok 1:** adres URL zwracający pojedyncze zdjęcie z kamery, klucz API
    Gemini, typ licznika/jednostka, czy zdjęcie wymaga odbicia lustrzanego.
-5. **Krok 2 — kalibracja z podglądem:** formularz pokazuje na żywo pełne
-   zdjęcie z kamery. Wpisujesz współrzędne (piksele) ramki wokół paska cyfr,
-   zapisujesz — formularz wraca z podglądem samego przycięcia, powiększonym
-   ×4 (dokładnie tak, jak trafia do AI). Poprawiasz współrzędne, aż cyfry na
-   podglądzie są czytelne, i dopiero wtedy zaznaczasz "Zatwierdź". Ramka poza
-   granicami zdjęcia jest odrzucana od razu, z komunikatem błędu, nie cichym
-   ucięciem.
+5. **Krok 2 — kalibracja z podglądem:** formularz HA nie umożliwia
+   interaktywnego przeciągania ramki na obrazku (brak JS/canvas w
+   config_flow), więc zamiast tego pokazuje pełne zdjęcie z naniesioną
+   siatką współrzędnych co 50px — z niej odczytujesz piksele rogów paska
+   cyfr. Wpisujesz je i zapisujesz: zobaczysz swoją ramkę zaznaczoną na
+   czerwono na pełnym zdjęciu (do korekty) oraz osobny podgląd samego
+   przycięcia, powiększony ×4 (dokładnie tak, jak trafia do AI, do
+   sprawdzenia czytelności cyfr). Poprawiasz współrzędne w kolejnych
+   próbach, aż będzie dobrze, i dopiero wtedy zaznaczasz "Zatwierdź". Ramka
+   poza granicami zdjęcia jest odrzucana od razu, z komunikatem błędu, nie
+   cichym ucięciem.
 
 Nie trzeba niczego mierzyć w zewnętrznym edytorze grafiki — kalibracja
-dzieje się w całości w formularzu dodawania integracji.
+dzieje się w całości w formularzu dodawania integracji, na podstawie
+siatki naniesionej na zdjęcie.
 
 ## Ustawienia (Options Flow)
 
