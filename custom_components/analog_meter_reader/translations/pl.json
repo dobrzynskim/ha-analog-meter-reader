@@ -45,7 +45,8 @@
           "max_step": "Maks. realistyczny wzrost między odczytami",
           "prompt": "Własny prompt AI (puste = domyślny)",
           "quiet_hours_start": "Godziny ciszy - początek (GG:MM, puste = wyłączone)",
-          "quiet_hours_end": "Godziny ciszy - koniec (GG:MM)"
+          "quiet_hours_end": "Godziny ciszy - koniec (GG:MM)",
+          "gemini_model": "Model Gemini"
         }
       }
     }
@@ -64,6 +65,10 @@
     },
     "button": {
       "force_reading": { "name": "Wymuś odczyt teraz" }
+    },
+    "text": {
+      "quiet_hours_start": { "name": "Godziny ciszy - początek" },
+      "quiet_hours_end": { "name": "Godziny ciszy - koniec" }
     }
   },
   "issues": {

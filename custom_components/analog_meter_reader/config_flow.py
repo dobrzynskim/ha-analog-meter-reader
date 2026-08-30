@@ -31,6 +31,7 @@ from .const import (
     CONF_CROP_TOP,
     CONF_DEVICE_CLASS,
     CONF_FLIP_HORIZONTAL,
+    CONF_GEMINI_MODEL,
     CONF_MAX_STEP,
     CONF_NAME,
     CONF_PROMPT,
@@ -41,6 +42,7 @@ from .const import (
     CROP_UPSCALE_FACTOR,
     DEFAULT_DEVICE_CLASS,
     DEFAULT_FLIP_HORIZONTAL,
+    DEFAULT_GEMINI_MODEL,
     DEFAULT_MAX_STEP,
     DEFAULT_SCAN_INTERVAL_MINUTES,
     DEFAULT_UNIT_OF_MEASUREMENT,
@@ -225,6 +227,9 @@ class AnalogMeterReaderOptionsFlow(config_entries.OptionsFlow):
                 ): str,
                 vol.Optional(
                     CONF_QUIET_HOURS_END, default=options.get(CONF_QUIET_HOURS_END, "")
+                ): str,
+                vol.Optional(
+                    CONF_GEMINI_MODEL, default=options.get(CONF_GEMINI_MODEL, DEFAULT_GEMINI_MODEL)
                 ): str,
             }
         )

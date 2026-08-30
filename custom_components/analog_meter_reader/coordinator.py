@@ -37,6 +37,7 @@ from .const import (
     CONF_CROP_RIGHT,
     CONF_CROP_TOP,
     CONF_FLIP_HORIZONTAL,
+    CONF_GEMINI_MODEL,
     CONF_MAX_STEP,
     CONF_PROMPT,
     CONF_QUIET_HOURS_END,
@@ -44,10 +45,10 @@ from .const import (
     CONSECUTIVE_BAD_THRESHOLD,
     CROP_UPSCALE_FACTOR,
     DEFAULT_FLIP_HORIZONTAL,
+    DEFAULT_GEMINI_MODEL,
     DEFAULT_MAX_STEP,
     DEFAULT_PROMPT,
     DOMAIN,
-    GEMINI_MODEL,
     STORAGE_VERSION,
     UNCERTAIN_MARKER,
 )
@@ -132,10 +133,11 @@ class MeterReaderCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         full_bytes = await self.hass.async_add_executor_job(to_jpeg_bytes, image)
 
         prompt = self._config.get(CONF_PROMPT) or DEFAULT_PROMPT.format(uncertain_marker=UNCERTAIN_MARKER)
+        model = self._config.get(CONF_GEMINI_MODEL) or DEFAULT_GEMINI_MODEL
 
         try:
             text = await async_ask_gemini(
-                self._session, self._config[CONF_API_KEY], GEMINI_MODEL, prompt, crop_bytes
+                self._session, self._config[CONF_API_KEY], model, prompt, crop_bytes
             )
         except MeterReaderApiError as err:
             raise UpdateFailed(str(err)) from err

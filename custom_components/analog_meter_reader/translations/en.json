@@ -45,7 +45,8 @@
           "max_step": "Max. realistic increase between readings",
           "prompt": "Custom AI prompt (empty = default)",
           "quiet_hours_start": "Quiet hours - start (HH:MM, empty = disabled)",
-          "quiet_hours_end": "Quiet hours - end (HH:MM)"
+          "quiet_hours_end": "Quiet hours - end (HH:MM)",
+          "gemini_model": "Gemini model"
         }
       }
     }
@@ -64,6 +65,10 @@
     },
     "button": {
       "force_reading": { "name": "Force reading now" }
+    },
+    "text": {
+      "quiet_hours_start": { "name": "Quiet hours - start" },
+      "quiet_hours_end": { "name": "Quiet hours - end" }
     }
   },
   "issues": {

@@ -49,6 +49,8 @@ zamiast pliku + helpera.
     oba zapisują się do tego samego ustawienia i przetrwają restart HA.
 - **`button`** — "Wymuś odczyt teraz": natychmiastowe pobranie zdjęcia i
   odczyt, bez czekania na kolejny zaplanowany cykl.
+- **`text`** — godziny ciszy (początek/koniec), ta sama wartość co w
+  Options Flow, tylko widoczna wprost na karcie urządzenia.
 
 Integracja sama pilnuje jakości źródła: po **6 kolejnych** odrzuconych/
 niepewnych odczytach pod rząd zgłasza **Repair Issue** ("możliwy problem z
@@ -107,6 +109,11 @@ Bez zmiany kodu, przez **Konfiguruj** przy integracji:
   06:00). Puste pola = wyłączone, odpytywanie non-stop jak dotąd. Realnie
   ogranicza liczbę (płatnych) zapytań do Gemini w porach, gdy zmiana
   odczytu jest mało prawdopodobna.
+- **model Gemini** (domyślnie `gemini-3.6-flash`) — konfigurowalny, nie
+  wpisany na sztywno w kodzie. Google regularnie wycofuje starsze modele
+  dla nowych kluczy API (tak stało się z `gemini-2.5-flash` w trakcie
+  pierwszego uruchomienia tej integracji - patrz historia commitów) - gdy
+  to się powtórzy, zmiana modelu nie wymaga edycji kodu ani redeployu.
 
 ## Diagnostyka
 

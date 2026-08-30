@@ -20,6 +20,7 @@ CONF_PROMPT = "prompt"
 CONF_CONFIRM = "confirm"
 CONF_QUIET_HOURS_START = "quiet_hours_start"
 CONF_QUIET_HOURS_END = "quiet_hours_end"
+CONF_GEMINI_MODEL = "gemini_model"
 
 DEFAULT_FLIP_HORIZONTAL = True
 DEFAULT_DEVICE_CLASS = "water"
@@ -35,7 +36,12 @@ CROP_UPSCALE_FACTOR = 4
 CALIBRATION_DRIFT_ISSUE = "calibration_drift"
 CONSECUTIVE_BAD_THRESHOLD = 6
 
-GEMINI_MODEL = "gemini-3.6-flash"
+# Model konfigurowalny (Options Flow, CONF_GEMINI_MODEL) - to wartość
+# domyślna, nie sztywna. Google regularnie wycofuje starsze modele dla
+# nowych kluczy (patrz historia tego repo: gemini-2.5-flash przestał działać
+# z dnia na dzień z HTTP 404 "no longer available to new users") - sztywne
+# wpisanie jednej nazwy w kodzie gwarantuje, że kiedyś się to powtórzy.
+DEFAULT_GEMINI_MODEL = "gemini-3.6-flash"
 
 # Domyślny prompt dopasowany do liczników z czarnymi cyframi (pełne jednostki)
 # i czerwonymi cyframi (ułamek jednostki) na bębenkach - typowy układ liczników
