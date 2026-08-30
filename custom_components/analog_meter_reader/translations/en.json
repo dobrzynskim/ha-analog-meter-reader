@@ -67,8 +67,8 @@
       "force_reading": { "name": "Force reading now" }
     },
     "text": {
-      "quiet_hours_start": { "name": "Quiet hours - start" },
-      "quiet_hours_end": { "name": "Quiet hours - end" }
+      "quiet_hours_start": { "name": "Quiet hours 1 - start" },
+      "quiet_hours_end": { "name": "Quiet hours 2 - end" }
     }
   },
   "issues": {

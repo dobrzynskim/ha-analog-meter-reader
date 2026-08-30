@@ -67,8 +67,8 @@
       "force_reading": { "name": "Wymuś odczyt teraz" }
     },
     "text": {
-      "quiet_hours_start": { "name": "Godziny ciszy - początek" },
-      "quiet_hours_end": { "name": "Godziny ciszy - koniec" }
+      "quiet_hours_start": { "name": "Godziny ciszy 1 - początek" },
+      "quiet_hours_end": { "name": "Godziny ciszy 2 - koniec" }
     }
   },
   "issues": {
