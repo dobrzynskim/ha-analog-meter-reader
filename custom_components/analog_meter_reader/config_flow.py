@@ -169,14 +169,18 @@ class AnalogMeterReaderConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     @staticmethod
     @callback
     def async_get_options_flow(config_entry):
-        return AnalogMeterReaderOptionsFlow(config_entry)
+        return AnalogMeterReaderOptionsFlow()
 
 
 class AnalogMeterReaderOptionsFlow(config_entries.OptionsFlow):
-    """Strojenie bez zmiany kodu: interwał, tolerancja skoku, własny prompt."""
+    """Strojenie bez zmiany kodu: interwał, tolerancja skoku, własny prompt.
 
-    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
-        self.config_entry = config_entry
+    UWAGA: bez własnego __init__/self.config_entry = ... - w nowszych HA
+    config_entry jest właściwością tylko do odczytu w klasie bazowej
+    OptionsFlow (ustawianą automatycznie przez menedżera flow), a próba
+    nadpisania jej rzuca "AttributeError: property 'config_entry' has no
+    setter" (złapane na żywo przy pierwszym kliknięciu "Konfiguruj").
+    """
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         if user_input is not None:
