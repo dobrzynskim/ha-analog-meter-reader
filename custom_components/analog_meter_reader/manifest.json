@@ -3,6 +3,7 @@
   "name": "Analog Meter Reader",
   "codeowners": ["@dobrzynskim"],
   "config_flow": true,
+  "dependencies": ["camera"],
   "documentation": "https://github.com/dobrzynskim/ha-analog-meter-reader",
   "integration_type": "device",
   "iot_class": "local_polling",

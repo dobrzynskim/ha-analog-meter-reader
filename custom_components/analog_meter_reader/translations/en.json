@@ -3,10 +3,11 @@
     "step": {
       "user": {
         "title": "Analog Meter Reader",
-        "description": "Enter the snapshot URL of the camera pointed at the meter. The next step shows a live preview of that image so you can calibrate the crop box.",
+        "description": "Provide EXACTLY ONE image source: a camera snapshot URL, or an existing HA camera entity (RTSP/ONVIF/Frigate/go2rtc/WebRTC - anything HA can already turn into a frame). The next step shows a live preview of that image so you can calibrate the crop box.",
         "data": {
           "name": "Name",
-          "camera_url": "Camera snapshot URL",
+          "camera_url": "Camera snapshot URL (optional)",
+          "camera_entity_id": "HA camera entity (optional)",
           "api_key": "Gemini API key",
           "device_class": "Meter type",
           "unit_of_measurement": "Unit",
@@ -26,7 +27,8 @@
       }
     },
     "error": {
-      "cannot_connect": "Could not fetch a snapshot from the given camera address.",
+      "cannot_connect": "Could not fetch an image from the given source.",
+      "choose_one_source": "Provide exactly one image source - either the snapshot URL or the camera entity, not both and not neither.",
       "invalid_crop": "The crop box is empty or extends beyond the image bounds - fix the coordinates.",
       "unknown": "Unexpected error."
     },
@@ -60,6 +62,12 @@
     },
     "button": {
       "force_reading": { "name": "Force reading now" }
+    }
+  },
+  "issues": {
+    "calibration_drift": {
+      "title": "Possible meter reading calibration issue",
+      "description": "The last {count} readings in a row were rejected or the AI was unsure of them. This usually means the camera moved, lighting changed, or the crop box no longer lines up with the digit strip. Check the image on this integration's `camera` entity - if the digits are no longer in frame, remove and re-add the integration to recalibrate the crop box."
     }
   }
 }

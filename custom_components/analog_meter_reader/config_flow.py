@@ -12,13 +12,17 @@ from typing import Any
 import voluptuous as vol
 
 from homeassistant import config_entries
+from homeassistant.components.camera import async_get_image
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.data_entry_flow import FlowResult
+from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers import selector
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .api import MeterReaderApiError, async_fetch_snapshot
+from .api import TIMEOUT_SNAPSHOT_SECONDS, MeterReaderApiError, async_fetch_snapshot
 from .const import (
     CONF_API_KEY,
+    CONF_CAMERA_ENTITY_ID,
     CONF_CAMERA_URL,
     CONF_CONFIRM,
     CONF_CROP_BOTTOM,
@@ -47,7 +51,10 @@ _LOGGER = logging.getLogger(__name__)
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_NAME, default="Wodomierz"): str,
-        vol.Required(CONF_CAMERA_URL): str,
+        vol.Optional(CONF_CAMERA_URL): str,
+        vol.Optional(CONF_CAMERA_ENTITY_ID): selector.EntitySelector(
+            selector.EntitySelectorConfig(domain="camera")
+        ),
         vol.Required(CONF_API_KEY): str,
         vol.Required(CONF_DEVICE_CLASS, default=DEFAULT_DEVICE_CLASS): vol.In(["water", "gas"]),
         vol.Required(CONF_UNIT_OF_MEASUREMENT, default=DEFAULT_UNIT_OF_MEASUREMENT): str,
@@ -71,23 +78,37 @@ class AnalogMeterReaderConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
 
         if user_input is not None:
-            session = async_get_clientsession(self.hass)
-            try:
-                raw = await async_fetch_snapshot(session, user_input[CONF_CAMERA_URL])
-                image = await self.hass.async_add_executor_job(
-                    load_and_orient, raw, user_input[CONF_FLIP_HORIZONTAL]
-                )
-            except MeterReaderApiError:
-                errors["base"] = "cannot_connect"
-            except Exception:  # noqa: BLE001
-                _LOGGER.exception("Nieoczekiwany błąd podczas pobierania zdjęcia z kamery")
-                errors["base"] = "unknown"
+            camera_url = user_input.get(CONF_CAMERA_URL)
+            camera_entity_id = user_input.get(CONF_CAMERA_ENTITY_ID)
+
+            if bool(camera_url) == bool(camera_entity_id):
+                # Dokładnie jedno źródło musi być podane - albo URL snapshotu,
+                # albo encja camera z HA (RTSP/ONVIF/Frigate/go2rtc/WebRTC...).
+                errors["base"] = "choose_one_source"
             else:
-                await self.async_set_unique_id(user_input[CONF_CAMERA_URL])
-                self._abort_if_unique_id_configured()
-                self._data = dict(user_input)
-                self._full_image = image
-                return await self.async_step_crop()
+                session = async_get_clientsession(self.hass)
+                try:
+                    if camera_entity_id:
+                        camera_image = await async_get_image(
+                            self.hass, camera_entity_id, timeout=TIMEOUT_SNAPSHOT_SECONDS
+                        )
+                        raw = camera_image.content
+                    else:
+                        raw = await async_fetch_snapshot(session, camera_url)
+                    image = await self.hass.async_add_executor_job(
+                        load_and_orient, raw, user_input[CONF_FLIP_HORIZONTAL]
+                    )
+                except (MeterReaderApiError, HomeAssistantError):
+                    errors["base"] = "cannot_connect"
+                except Exception:  # noqa: BLE001
+                    _LOGGER.exception("Nieoczekiwany błąd podczas pobierania zdjęcia z kamery")
+                    errors["base"] = "unknown"
+                else:
+                    await self.async_set_unique_id(camera_url or camera_entity_id)
+                    self._abort_if_unique_id_configured()
+                    self._data = dict(user_input)
+                    self._full_image = image
+                    return await self.async_step_crop()
 
         return self.async_show_form(
             step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors

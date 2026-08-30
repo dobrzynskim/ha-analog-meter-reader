@@ -5,6 +5,7 @@ STORAGE_VERSION = 1
 
 CONF_NAME = "name"
 CONF_CAMERA_URL = "camera_url"
+CONF_CAMERA_ENTITY_ID = "camera_entity_id"
 CONF_API_KEY = "api_key"
 CONF_FLIP_HORIZONTAL = "flip_horizontal"
 CONF_CROP_LEFT = "crop_left"
@@ -24,6 +25,13 @@ DEFAULT_UNIT_OF_MEASUREMENT = "m³"
 DEFAULT_MAX_STEP = 2.0
 DEFAULT_SCAN_INTERVAL_MINUTES = 10
 CROP_UPSCALE_FACTOR = 4
+
+# Ile kolejnych cykli pod rząd z odrzuconym/niepewnym odczytem, zanim zgłosimy
+# Repair Issue sugerujący, że kamera się poruszyła i ramka wymaga ponownej
+# kalibracji - kilka pojedynczych złych odczytów to normalny szum (patrz
+# validation.py), dopiero DŁUGA seria oznacza realny problem ze źródłem.
+CALIBRATION_DRIFT_ISSUE = "calibration_drift"
+CONSECUTIVE_BAD_THRESHOLD = 6
 
 GEMINI_MODEL = "gemini-3.6-flash"
 

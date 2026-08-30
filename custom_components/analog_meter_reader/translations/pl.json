@@ -3,10 +3,11 @@
     "step": {
       "user": {
         "title": "Analog Meter Reader",
-        "description": "Podaj adres zdjęcia (snapshotu) z kamery skierowanej na licznik. W następnym kroku zobaczysz podgląd zdjęcia, żeby skalibrować ramkę przycięcia.",
+        "description": "Podaj DOKŁADNIE JEDNO źródło obrazu: adres URL snapshotu kamery, albo istniejącą encję camera w HA (RTSP/ONVIF/Frigate/go2rtc/WebRTC - cokolwiek HA już potrafi zamienić w klatkę). W następnym kroku zobaczysz podgląd zdjęcia, żeby skalibrować ramkę przycięcia.",
         "data": {
           "name": "Nazwa",
-          "camera_url": "Adres URL snapshotu kamery",
+          "camera_url": "Adres URL snapshotu kamery (opcjonalnie)",
+          "camera_entity_id": "Encja kamery HA (opcjonalnie)",
           "api_key": "Klucz API Gemini",
           "device_class": "Typ licznika",
           "unit_of_measurement": "Jednostka",
@@ -26,7 +27,8 @@
       }
     },
     "error": {
-      "cannot_connect": "Nie udało się pobrać zdjęcia z podanego adresu kamery.",
+      "cannot_connect": "Nie udało się pobrać zdjęcia z podanego źródła.",
+      "choose_one_source": "Podaj dokładnie jedno źródło obrazu - albo URL snapshotu, albo encję kamery, nie oba naraz i nie żadne.",
       "invalid_crop": "Ramka przycięcia jest pusta albo wykracza poza granice zdjęcia - popraw współrzędne.",
       "unknown": "Nieoczekiwany błąd."
     },
@@ -60,6 +62,12 @@
     },
     "button": {
       "force_reading": { "name": "Wymuś odczyt teraz" }
+    }
+  },
+  "issues": {
+    "calibration_drift": {
+      "title": "Możliwy problem z kalibracją odczytu licznika",
+      "description": "Ostatnie {count} odczytów pod rząd zostało odrzuconych albo AI nie było ich pewne. To zwykle oznacza, że kamera się poruszyła, oświetlenie się zmieniło, albo ramka przycięcia przestała trafiać w pasek cyfr. Sprawdź obraz na encji `camera` tej integracji - jeśli cyfry nie są już widoczne w kadrze, usuń i dodaj integrację ponownie, żeby przekalibrować ramkę."
     }
   }
 }

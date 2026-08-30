@@ -1,9 +1,14 @@
 # Analog Meter Reader
 
 Integracja Home Assistant, która odczytuje wskazanie **analogowego licznika**
-(wody, gazu — dowolnego z bębenkowym paskiem cyfr) ze zdjęcia zwykłej kamery
-IP, przy pomocy AI vision (Gemini). Dla liczników bez żadnego API/łączności —
-jedyny sposób na wpięcie ich do Home Assistant to właśnie odczyt obrazu.
+(wody, gazu — dowolnego z bębenkowym paskiem cyfr) ze zdjęcia kamery, przy
+pomocy AI vision (Gemini). Dla liczników bez żadnego API/łączności — jedyny
+sposób na wpięcie ich do Home Assistant to właśnie odczyt obrazu.
+
+Źródłem obrazu może być zwykły URL snapshotu **albo dowolna istniejąca
+encja `camera` w HA** — RTSP, ONVIF, Frigate, go2rtc, WebRTC, cokolwiek, co
+HA już potrafi zamienić w klatkę. Nie trzeba znać surowego adresu kamery ani
+osobno ogarniać jej autoryzacji.
 
 > ⚠️ **Status: wersja wczesna.** Logika odczytu/walidacji jest przeniesiona
 > z działającego od dłuższego czasu skryptu cron + MQTT + szablon Jinja w HA
@@ -45,6 +50,12 @@ zamiast pliku + helpera.
 - **`button`** — "Wymuś odczyt teraz": natychmiastowe pobranie zdjęcia i
   odczyt, bez czekania na kolejny zaplanowany cykl.
 
+Integracja sama pilnuje jakości źródła: po **6 kolejnych** odrzuconych/
+niepewnych odczytach pod rząd zgłasza **Repair Issue** ("możliwy problem z
+kalibracją") w Ustawienia → System → Naprawy — zwykle oznacza to, że kamera
+się poruszyła albo zmieniło się oświetlenie. Znika automatycznie, gdy
+znowu pojawi się dobry odczyt.
+
 ## Jak to działa
 
 Co `scan_interval_minutes` (domyślnie 10 min): pobierz zdjęcie z kamery →
@@ -60,8 +71,10 @@ wartości).
 1. Skopiuj `custom_components/analog_meter_reader` do `<config>/custom_components/`.
 2. Zrestartuj Home Assistant.
 3. Ustawienia → Urządzenia i usługi → Dodaj integrację → "Analog Meter Reader".
-4. **Krok 1:** adres URL zwracający pojedyncze zdjęcie z kamery, klucz API
-   Gemini, typ licznika/jednostka, czy zdjęcie wymaga odbicia lustrzanego.
+4. **Krok 1:** dokładnie jedno źródło obrazu — albo adres URL zwracający
+   pojedyncze zdjęcie z kamery, albo istniejąca encja `camera` w HA (wybór z
+   listy) — plus klucz API Gemini, typ licznika/jednostka, czy zdjęcie
+   wymaga odbicia lustrzanego.
 5. **Krok 2 — kalibracja z podglądem:** formularz HA nie umożliwia
    interaktywnego przeciągania ramki na obrazku (brak JS/canvas w
    config_flow), więc zamiast tego pokazuje pełne zdjęcie z naniesioną
