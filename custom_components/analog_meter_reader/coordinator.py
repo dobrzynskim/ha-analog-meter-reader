@@ -19,6 +19,7 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.util import dt as dt_util
 
 from .api import (
     TIMEOUT_SNAPSHOT_SECONDS,
@@ -38,6 +39,8 @@ from .const import (
     CONF_FLIP_HORIZONTAL,
     CONF_MAX_STEP,
     CONF_PROMPT,
+    CONF_QUIET_HOURS_END,
+    CONF_QUIET_HOURS_START,
     CONSECUTIVE_BAD_THRESHOLD,
     CROP_UPSCALE_FACTOR,
     DEFAULT_FLIP_HORIZONTAL,
@@ -49,6 +52,7 @@ from .const import (
     UNCERTAIN_MARKER,
 )
 from .image import crop_for_ocr, load_and_orient, to_jpeg_bytes
+from .schedule import is_within_quiet_hours, parse_hhmm
 from .validation import parse_ai_response, validate_reading
 
 _LOGGER = logging.getLogger(__name__)
@@ -91,6 +95,17 @@ class MeterReaderCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     async def _async_update_data(self) -> dict[str, Any]:
         if not self._store_loaded:
             await self._async_load_last_good()
+
+        quiet_start = parse_hhmm(self._config.get(CONF_QUIET_HOURS_START))
+        quiet_end = parse_hhmm(self._config.get(CONF_QUIET_HOURS_END))
+        if is_within_quiet_hours(dt_util.now().time(), quiet_start, quiet_end):
+            # Godziny ciszy - świadomie pomijamy pobranie zdjęcia i zapytanie
+            # do AI (to płatne zapytanie), nie tylko "nic nowego nie robimy".
+            # Zachowujemy ostatnie dane bez zmian, nie liczymy tego jako zły
+            # cykl (patrz _register_bad_cycle) - to nie jest niepewny/odrzucony
+            # odczyt, tylko świadoma decyzja o nieodpytywaniu.
+            _LOGGER.debug("W oknie ciszy (%s-%s) - pomijam odczyt", quiet_start, quiet_end)
+            return dict(self.data or {})
 
         camera_entity_id = self._config.get(CONF_CAMERA_ENTITY_ID)
         try:

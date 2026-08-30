@@ -43,7 +43,9 @@
         "data": {
           "scan_interval_minutes": "Częstotliwość odczytu (minuty)",
           "max_step": "Maks. realistyczny wzrost między odczytami",
-          "prompt": "Własny prompt AI (puste = domyślny)"
+          "prompt": "Własny prompt AI (puste = domyślny)",
+          "quiet_hours_start": "Godziny ciszy - początek (GG:MM, puste = wyłączone)",
+          "quiet_hours_end": "Godziny ciszy - koniec (GG:MM)"
         }
       }
     }

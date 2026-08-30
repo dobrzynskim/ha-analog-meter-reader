@@ -34,6 +34,8 @@ from .const import (
     CONF_MAX_STEP,
     CONF_NAME,
     CONF_PROMPT,
+    CONF_QUIET_HOURS_END,
+    CONF_QUIET_HOURS_START,
     CONF_SCAN_INTERVAL_MINUTES,
     CONF_UNIT_OF_MEASUREMENT,
     CROP_UPSCALE_FACTOR,
@@ -218,6 +220,12 @@ class AnalogMeterReaderOptionsFlow(config_entries.OptionsFlow):
                     CONF_MAX_STEP, default=options.get(CONF_MAX_STEP, DEFAULT_MAX_STEP)
                 ): vol.All(vol.Coerce(float), vol.Range(min=0.01, max=1000)),
                 vol.Optional(CONF_PROMPT, default=options.get(CONF_PROMPT, "")): str,
+                vol.Optional(
+                    CONF_QUIET_HOURS_START, default=options.get(CONF_QUIET_HOURS_START, "")
+                ): str,
+                vol.Optional(
+                    CONF_QUIET_HOURS_END, default=options.get(CONF_QUIET_HOURS_END, "")
+                ): str,
             }
         )
         return self.async_show_form(step_id="init", data_schema=schema)

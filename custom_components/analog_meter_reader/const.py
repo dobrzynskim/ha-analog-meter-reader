@@ -18,6 +18,8 @@ CONF_MAX_STEP = "max_step"
 CONF_SCAN_INTERVAL_MINUTES = "scan_interval_minutes"
 CONF_PROMPT = "prompt"
 CONF_CONFIRM = "confirm"
+CONF_QUIET_HOURS_START = "quiet_hours_start"
+CONF_QUIET_HOURS_END = "quiet_hours_end"
 
 DEFAULT_FLIP_HORIZONTAL = True
 DEFAULT_DEVICE_CLASS = "water"

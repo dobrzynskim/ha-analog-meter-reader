@@ -101,6 +101,12 @@ Bez zmiany kodu, przez **Konfiguruj** przy integracji:
 - własny prompt AI (domyślny jest dopasowany do liczników z czarnymi
   cyframi pełnych jednostek i czerwonymi cyframi ułamka — inny układ może
   wymagać innego opisu)
+- **godziny ciszy** (opcjonalnie, format GG:MM) — w tym oknie integracja
+  całkowicie pomija cykl (nie pobiera zdjęcia, nie pyta AI) i zachowuje
+  ostatnią wartość. Obsługuje okno przechodzące przez północ (np. 23:00 →
+  06:00). Puste pola = wyłączone, odpytywanie non-stop jak dotąd. Realnie
+  ogranicza liczbę (płatnych) zapytań do Gemini w porach, gdy zmiana
+  odczytu jest mało prawdopodobna.
 
 ## Diagnostyka
 

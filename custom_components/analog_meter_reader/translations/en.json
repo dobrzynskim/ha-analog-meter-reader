@@ -43,7 +43,9 @@
         "data": {
           "scan_interval_minutes": "Reading frequency (minutes)",
           "max_step": "Max. realistic increase between readings",
-          "prompt": "Custom AI prompt (empty = default)"
+          "prompt": "Custom AI prompt (empty = default)",
+          "quiet_hours_start": "Quiet hours - start (HH:MM, empty = disabled)",
+          "quiet_hours_end": "Quiet hours - end (HH:MM)"
         }
       }
     }
