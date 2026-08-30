@@ -66,11 +66,17 @@ async def async_ask_gemini(
             json=payload,
             timeout=aiohttp.ClientTimeout(total=TIMEOUT_GEMINI_SECONDS),
         ) as resp:
-            if resp.status in (401, 403):
-                raise MeterReaderAuthError(f"Nieprawidłowy klucz API Gemini (HTTP {resp.status})")
-            if resp.status == 400:
-                raise MeterReaderApiError(f"Gemini odrzuciło zapytanie (400): {await resp.text()}")
-            resp.raise_for_status()
+            if resp.status >= 400:
+                # Zawsze czytamy treść błędu - Google zwraca tam konkretny powód
+                # (np. "model X no longer available", limit wyczerpany, zły
+                # klucz), bez którego zostaje tylko goły kod HTTP nie do
+                # zdiagnozowania z samego statusu.
+                body = await resp.text()
+                if resp.status in (401, 403):
+                    raise MeterReaderAuthError(
+                        f"Nieprawidłowy klucz API Gemini (HTTP {resp.status}): {body}"
+                    )
+                raise MeterReaderApiError(f"Gemini zwróciło błąd (HTTP {resp.status}): {body}")
             data = await resp.json(content_type=None)
     except aiohttp.ClientError as err:
         raise MeterReaderApiError(f"Błąd połączenia z Gemini: {err}") from err

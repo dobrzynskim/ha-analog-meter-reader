@@ -80,6 +80,17 @@ def test_async_ask_gemini_400_raises_api_error():
         run(async_ask_gemini(session, "key", "gemini-2.5-flash", "prompt", b"jpeg"))
 
 
+def test_async_ask_gemini_error_body_included_in_message():
+    """Regresja: błędy inne niż 400/401/403 (np. 404 przy wycofanym modelu)
+    musiały być widoczne z treścią odpowiedzi Google, nie gołym kodem HTTP -
+    bez tego zdiagnozowanie realnego problemu wymagało ręcznego curl."""
+    session = FakeSession(
+        FakeResponse(404, text='{"error": {"message": "model no longer available"}}')
+    )
+    with pytest.raises(MeterReaderApiError, match="model no longer available"):
+        run(async_ask_gemini(session, "key", "gemini-2.5-flash", "prompt", b"jpeg"))
+
+
 def test_async_ask_gemini_malformed_shape_raises_api_error():
     session = FakeSession(FakeResponse(200, payload={"unexpected": True}))
     with pytest.raises(MeterReaderApiError):

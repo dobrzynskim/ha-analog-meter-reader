@@ -25,7 +25,7 @@ DEFAULT_MAX_STEP = 2.0
 DEFAULT_SCAN_INTERVAL_MINUTES = 10
 CROP_UPSCALE_FACTOR = 4
 
-GEMINI_MODEL = "gemini-2.5-flash"
+GEMINI_MODEL = "gemini-3.6-flash"
 
 # Domyślny prompt dopasowany do liczników z czarnymi cyframi (pełne jednostki)
 # i czerwonymi cyframi (ułamek jednostki) na bębenkach - typowy układ liczników
