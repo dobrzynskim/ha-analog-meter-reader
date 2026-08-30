@@ -13,9 +13,15 @@ class InvalidCropBox(Exception):
     """Ramka przycięcia jest pusta albo wykracza poza granice zdjęcia."""
 
 
-def load_and_orient(raw_bytes: bytes, *, flip_horizontal: bool) -> Image.Image:
+def load_and_orient(raw_bytes: bytes, flip_horizontal: bool) -> Image.Image:
     """Dekoduje zdjęcie z kamery; część kamer montowanych przy liczniku daje
-    obraz lustrzany - stąd opcjonalne odbicie."""
+    obraz lustrzany - stąd opcjonalne odbicie.
+
+    UWAGA: flip_horizontal jest celowo pozycyjny (nie keyword-only) - funkcja
+    jest wywoływana przez hass.async_add_executor_job(func, *args), który nie
+    przekazuje kwargs. Keyword-only tutaj wywalało się w praniu (TypeError:
+    takes 1 positional argument but 2 were given) w config_flow i coordinatorze.
+    """
     image = Image.open(BytesIO(raw_bytes)).convert("RGB")
     if flip_horizontal:
         image = image.transpose(Image.FLIP_LEFT_RIGHT)

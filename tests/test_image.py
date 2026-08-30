@@ -30,6 +30,14 @@ def test_load_and_orient_with_flip_swaps_sides():
     assert image.getpixel((19, 0)) == (0, 0, 0)
 
 
+def test_load_and_orient_accepts_positional_flip_arg():
+    """Regresja: hass.async_add_executor_job(func, *args) przekazuje tylko
+    argumenty pozycyjne - jeśli flip_horizontal byłby keyword-only, wywołanie
+    z config_flow/coordinator wywala się z TypeError (widziane na żywo)."""
+    image = load_and_orient(_make_test_image_bytes(), True)
+    assert image.getpixel((0, 0)) == (255, 255, 255)
+
+
 def test_crop_for_ocr_scales_by_factor():
     image = load_and_orient(_make_test_image_bytes(width=40, height=20), flip_horizontal=False)
     crop = crop_for_ocr(image, box=(0, 0, 10, 10), scale=4)
