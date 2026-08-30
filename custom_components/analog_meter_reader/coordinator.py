@@ -124,3 +124,12 @@ class MeterReaderCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         result["raw_value"] = value
         result["rejected"] = rejected
         return result
+
+    async def async_set_manual_value(self, value: float) -> None:
+        """Ręczna korekta z encji number - np. seria odrzuconych (podejrzanych)
+        odczytów z tego samego powodu, albo fizyczna wymiana/zerowanie
+        licznika. Nadpisuje ostatnią dobrą wartość od razu (bez czekania na
+        kolejny cykl) i staje się nowym punktem odniesienia dla walidacji."""
+        self._last_good = value
+        await self._store.async_save({"last_good": value})
+        self.async_set_updated_data({**(self.data or {}), "value": value, "rejected": False})

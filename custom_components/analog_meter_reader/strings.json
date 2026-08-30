@@ -52,6 +52,9 @@
     },
     "camera": {
       "last_snapshot": { "name": "Ostatnie zdjęcie" }
+    },
+    "number": {
+      "manual_override": { "name": "Ręczna korekta odczytu" }
     }
   }
 }

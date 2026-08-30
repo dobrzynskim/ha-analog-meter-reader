@@ -29,9 +29,14 @@ zamiast pliku + helpera.
   odrzuceniu w atrybutach.
 - **`binary_sensor`** — "Podejrzany odczyt": włączony, gdy ostatni surowy
   odczyt AI został odrzucony (cofnięcie się albo nierealistyczny skok) —
-  gotowy trigger na powiadomienie.
+  gotowy trigger na powiadomienie. W atrybutach ma surowy odczyt/odpowiedź
+  AI, które go wywołały - widać od razu, co konkretnie AI odczytało.
 - **`camera`** — ostatnie pobrane zdjęcie (po odbiciu lustrzanym, jeśli
   włączone) — podgląd na dashboardzie bez trzymania osobnego pliku na dysku.
+- **`number`** — ręczna korekta: wpisana wartość od razu zastępuje bieżący
+  odczyt i staje się nowym punktem odniesienia dla walidacji. Przydatne przy
+  serii odrzuconych odczytów pod rząd (np. AI utknęło na złej wartości) albo
+  po fizycznej wymianie/zerowaniu licznika.
 
 ## Jak to działa
 

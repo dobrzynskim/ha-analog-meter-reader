@@ -1,6 +1,8 @@
 """Binarny sensor 'podejrzany odczyt' dla Analog Meter Reader."""
 from __future__ import annotations
 
+from typing import Any
+
 from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -39,3 +41,12 @@ class MeterReaderSuspiciousReading(CoordinatorEntity[MeterReaderCoordinator], Bi
     @property
     def icon(self) -> str:
         return "mdi:alert-circle-outline" if self.is_on else "mdi:check-circle-outline"
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        data = self.coordinator.data or {}
+        return {
+            "surowy_odczyt_ai": data.get("raw_value"),
+            "surowa_odpowiedz_ai": data.get("raw_text"),
+            "aktualna_zaakceptowana_wartosc": data.get("value"),
+        }
