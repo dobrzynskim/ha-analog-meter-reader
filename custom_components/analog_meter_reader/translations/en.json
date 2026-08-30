@@ -54,7 +54,8 @@
       "last_snapshot": { "name": "Last snapshot" }
     },
     "number": {
-      "manual_override": { "name": "Manual reading correction" }
+      "manual_override": { "name": "Manual reading correction" },
+      "scan_interval": { "name": "Reading frequency" }
     },
     "button": {
       "force_reading": { "name": "Force reading now" }

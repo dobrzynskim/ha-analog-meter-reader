@@ -54,7 +54,8 @@
       "last_snapshot": { "name": "Ostatnie zdjęcie" }
     },
     "number": {
-      "manual_override": { "name": "Ręczna korekta odczytu" }
+      "manual_override": { "name": "Ręczna korekta odczytu" },
+      "scan_interval": { "name": "Częstotliwość odczytu" }
     },
     "button": {
       "force_reading": { "name": "Wymuś odczyt teraz" }
