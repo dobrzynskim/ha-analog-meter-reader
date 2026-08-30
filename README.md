@@ -33,15 +33,15 @@ zamiast pliku + helpera.
   AI, które go wywołały - widać od razu, co konkretnie AI odczytało.
 - **`camera`** — ostatnie pobrane zdjęcie (po odbiciu lustrzanym, jeśli
   włączone) — podgląd na dashboardzie bez trzymania osobnego pliku na dysku.
-- **`number`** — dwie encje w sekcji "Konfiguracja" na karcie urządzenia:
+- **`number`** — trzy encje w sekcji "Konfiguracja" na karcie urządzenia:
   - **ręczna korekta**: wpisana wartość od razu zastępuje bieżący odczyt i
     staje się nowym punktem odniesienia dla walidacji. Przydatne przy serii
     odrzuconych odczytów pod rząd (np. AI utknęło na złej wartości) albo po
     fizycznej wymianie/zerowaniu licznika.
-  - **częstotliwość odczytu** (1-1440 min): ta sama wartość co w dialogu
-    "Konfiguruj" (Options Flow) — zmiana w jednym miejscu widoczna jest też
-    w drugim, oba zapisują się do tego samego ustawienia i przetrwają
-    restart HA.
+  - **częstotliwość odczytu** (1-1440 min) i **maksymalny realistyczny
+    wzrost między odczytami** — te same wartości co w dialogu "Konfiguruj"
+    (Options Flow) — zmiana w jednym miejscu widoczna jest też w drugim,
+    oba zapisują się do tego samego ustawienia i przetrwają restart HA.
 - **`button`** — "Wymuś odczyt teraz": natychmiastowe pobranie zdjęcia i
   odczyt, bez czekania na kolejny zaplanowany cykl.
 

@@ -9,8 +9,10 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
+    CONF_MAX_STEP,
     CONF_SCAN_INTERVAL_MINUTES,
     CONF_UNIT_OF_MEASUREMENT,
+    DEFAULT_MAX_STEP,
     DEFAULT_SCAN_INTERVAL_MINUTES,
     DEFAULT_UNIT_OF_MEASUREMENT,
     DOMAIN,
@@ -27,6 +29,7 @@ async def async_setup_entry(
         [
             MeterReaderManualOverride(coordinator, entry),
             MeterReaderScanInterval(coordinator, entry),
+            MeterReaderMaxStep(coordinator, entry),
         ]
     )
 
@@ -99,4 +102,37 @@ class MeterReaderScanInterval(CoordinatorEntity[MeterReaderCoordinator], NumberE
         self.hass.config_entries.async_update_entry(
             self._entry,
             options={**self._entry.options, CONF_SCAN_INTERVAL_MINUTES: int(value)},
+        )
+
+
+class MeterReaderMaxStep(CoordinatorEntity[MeterReaderCoordinator], NumberEntity):
+    """Maksymalny realistyczny wzrost między odczytami jako encja - ta sama
+    wartość i ścieżka zapisu (entry.options) co CONF_MAX_STEP w Options
+    Flow, tylko widoczna wprost na karcie urządzenia."""
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "max_step"
+    _attr_native_min_value = 0.01
+    _attr_native_max_value = 1000
+    _attr_native_step = 0.01
+    _attr_mode = NumberMode.BOX
+    _attr_entity_category = EntityCategory.CONFIG
+
+    def __init__(self, coordinator: MeterReaderCoordinator, entry: ConfigEntry) -> None:
+        super().__init__(coordinator)
+        self._entry = entry
+        self._attr_unique_id = f"{entry.entry_id}_max_step"
+        self._attr_device_info = device_info(entry)
+        self._attr_native_unit_of_measurement = entry.data.get(
+            CONF_UNIT_OF_MEASUREMENT, DEFAULT_UNIT_OF_MEASUREMENT
+        )
+
+    @property
+    def native_value(self) -> float:
+        return self._entry.options.get(CONF_MAX_STEP, DEFAULT_MAX_STEP)
+
+    async def async_set_native_value(self, value: float) -> None:
+        self.hass.config_entries.async_update_entry(
+            self._entry,
+            options={**self._entry.options, CONF_MAX_STEP: value},
         )

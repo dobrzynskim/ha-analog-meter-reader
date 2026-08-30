@@ -55,7 +55,8 @@
     },
     "number": {
       "manual_override": { "name": "Manual reading correction" },
-      "scan_interval": { "name": "Reading frequency" }
+      "scan_interval": { "name": "Reading frequency" },
+      "max_step": { "name": "Max. realistic increase between readings" }
     },
     "button": {
       "force_reading": { "name": "Force reading now" }

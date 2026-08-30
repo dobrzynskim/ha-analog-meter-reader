@@ -55,7 +55,8 @@
     },
     "number": {
       "manual_override": { "name": "Ręczna korekta odczytu" },
-      "scan_interval": { "name": "Częstotliwość odczytu" }
+      "scan_interval": { "name": "Częstotliwość odczytu" },
+      "max_step": { "name": "Maks. realistyczny wzrost między odczytami" }
     },
     "button": {
       "force_reading": { "name": "Wymuś odczyt teraz" }
