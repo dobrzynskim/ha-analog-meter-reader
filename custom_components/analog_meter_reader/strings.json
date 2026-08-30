@@ -55,6 +55,9 @@
     },
     "number": {
       "manual_override": { "name": "Ręczna korekta odczytu" }
+    },
+    "button": {
+      "force_reading": { "name": "Wymuś odczyt teraz" }
     }
   }
 }

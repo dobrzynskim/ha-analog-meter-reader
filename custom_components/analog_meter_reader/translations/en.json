@@ -55,6 +55,9 @@
     },
     "number": {
       "manual_override": { "name": "Manual reading correction" }
+    },
+    "button": {
+      "force_reading": { "name": "Force reading now" }
     }
   }
 }

@@ -37,6 +37,8 @@ zamiast pliku + helpera.
   odczyt i staje się nowym punktem odniesienia dla walidacji. Przydatne przy
   serii odrzuconych odczytów pod rząd (np. AI utknęło na złej wartości) albo
   po fizycznej wymianie/zerowaniu licznika.
+- **`button`** — "Wymuś odczyt teraz": natychmiastowe pobranie zdjęcia i
+  odczyt, bez czekania na kolejny zaplanowany cykl.
 
 ## Jak to działa
 
