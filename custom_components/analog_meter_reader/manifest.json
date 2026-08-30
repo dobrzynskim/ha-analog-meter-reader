@@ -1,0 +1,12 @@
+{
+  "domain": "analog_meter_reader",
+  "name": "Analog Meter Reader",
+  "codeowners": ["@dobrzynskim"],
+  "config_flow": true,
+  "documentation": "https://github.com/dobrzynskim/ha-analog-meter-reader",
+  "integration_type": "device",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/dobrzynskim/ha-analog-meter-reader/issues",
+  "requirements": ["Pillow>=10.0.0"],
+  "version": "0.1.0"
+}

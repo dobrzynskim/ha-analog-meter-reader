@@ -1,0 +1,50 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Analog Meter Reader",
+        "description": "Enter the snapshot URL of the camera pointed at the meter, and the crop box (in pixels) around the digit strip.",
+        "data": {
+          "name": "Name",
+          "camera_url": "Camera snapshot URL",
+          "api_key": "Gemini API key",
+          "device_class": "Meter type",
+          "unit_of_measurement": "Unit",
+          "crop_left": "Crop: left edge (px)",
+          "crop_top": "Crop: top edge (px)",
+          "crop_right": "Crop: right edge (px)",
+          "crop_bottom": "Crop: bottom edge (px)",
+          "flip_horizontal": "Flip the image horizontally"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not fetch a snapshot from the given camera address.",
+      "invalid_crop": "The crop box is invalid (check the coordinates against the image size).",
+      "unknown": "Unexpected error."
+    },
+    "abort": {
+      "already_configured": "This camera is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Settings",
+        "data": {
+          "scan_interval_minutes": "Reading frequency (minutes)",
+          "max_step": "Max. realistic increase between readings",
+          "prompt": "Custom AI prompt (empty = default)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "suspicious_reading": { "name": "Suspicious reading" }
+    },
+    "camera": {
+      "last_snapshot": { "name": "Last snapshot" }
+    }
+  }
+}

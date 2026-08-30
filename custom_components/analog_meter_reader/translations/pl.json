@@ -1,0 +1,50 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Analog Meter Reader",
+        "description": "Podaj adres zdjęcia (snapshotu) z kamery skierowanej na licznik oraz ramkę przycięcia (w pikselach) wokół paska cyfr.",
+        "data": {
+          "name": "Nazwa",
+          "camera_url": "Adres URL snapshotu kamery",
+          "api_key": "Klucz API Gemini",
+          "device_class": "Typ licznika",
+          "unit_of_measurement": "Jednostka",
+          "crop_left": "Przycięcie: lewa krawędź (px)",
+          "crop_top": "Przycięcie: górna krawędź (px)",
+          "crop_right": "Przycięcie: prawa krawędź (px)",
+          "crop_bottom": "Przycięcie: dolna krawędź (px)",
+          "flip_horizontal": "Odbij zdjęcie lustrzanie"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Nie udało się pobrać zdjęcia z podanego adresu kamery.",
+      "invalid_crop": "Podana ramka przycięcia jest nieprawidłowa (sprawdź współrzędne względem rozmiaru zdjęcia).",
+      "unknown": "Nieoczekiwany błąd."
+    },
+    "abort": {
+      "already_configured": "Ta kamera jest już skonfigurowana."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Ustawienia",
+        "data": {
+          "scan_interval_minutes": "Częstotliwość odczytu (minuty)",
+          "max_step": "Maks. realistyczny wzrost między odczytami",
+          "prompt": "Własny prompt AI (puste = domyślny)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "suspicious_reading": { "name": "Podejrzany odczyt" }
+    },
+    "camera": {
+      "last_snapshot": { "name": "Ostatnie zdjęcie" }
+    }
+  }
+}
