@@ -59,3 +59,12 @@ def test_validate_reading_decimal_shift_is_corrected_not_rejected():
 def test_validate_reading_unrealistic_jump_without_fix_is_rejected():
     value, rejected = validate_reading(999.9, last_good=515.2, max_step=2.0)
     assert (value, rejected) == (515.2, True)
+
+
+def test_validate_reading_identical_value_is_accepted_not_rejected():
+    """Licznik nie musi rosnąć w KAŻDYM cyklu - jeśli w danym oknie nikt nie
+    użył wody/gazu, kolejny odczyt będzie identyczny z poprzednim, i to jest
+    prawidłowy, nie podejrzany wynik. Warunek odrzucenia to `value <
+    last_good` (ostro), nie `value <= last_good`."""
+    value, rejected = validate_reading(515.2, last_good=515.2, max_step=2.0)
+    assert (value, rejected) == (515.2, False)
