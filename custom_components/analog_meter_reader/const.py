@@ -16,6 +16,7 @@ CONF_UNIT_OF_MEASUREMENT = "unit_of_measurement"
 CONF_MAX_STEP = "max_step"
 CONF_SCAN_INTERVAL_MINUTES = "scan_interval_minutes"
 CONF_PROMPT = "prompt"
+CONF_CONFIRM = "confirm"
 
 DEFAULT_FLIP_HORIZONTAL = True
 DEFAULT_DEVICE_CLASS = "water"

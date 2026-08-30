@@ -3,24 +3,31 @@
     "step": {
       "user": {
         "title": "Analog Meter Reader",
-        "description": "Podaj adres zdjęcia (snapshotu) z kamery skierowanej na licznik oraz ramkę przycięcia (w pikselach) wokół paska cyfr.",
+        "description": "Podaj adres zdjęcia (snapshotu) z kamery skierowanej na licznik. W następnym kroku zobaczysz podgląd zdjęcia, żeby skalibrować ramkę przycięcia.",
         "data": {
           "name": "Nazwa",
           "camera_url": "Adres URL snapshotu kamery",
           "api_key": "Klucz API Gemini",
           "device_class": "Typ licznika",
           "unit_of_measurement": "Jednostka",
-          "crop_left": "Przycięcie: lewa krawędź (px)",
-          "crop_top": "Przycięcie: górna krawędź (px)",
-          "crop_right": "Przycięcie: prawa krawędź (px)",
-          "crop_bottom": "Przycięcie: dolna krawędź (px)",
           "flip_horizontal": "Odbij zdjęcie lustrzanie"
+        }
+      },
+      "crop": {
+        "title": "Kalibracja ramki przycięcia",
+        "description": "{image_preview}\n\nWpisz współrzędne (piksele) ramki wokół paska cyfr na powyższym zdjęciu, zapisz i sprawdź podgląd przycięcia poniżej. Powtarzaj, aż cyfry na podglądzie przycięcia będą czytelne - dopiero wtedy zaznacz \"Zatwierdź\".",
+        "data": {
+          "crop_left": "Lewa krawędź (px)",
+          "crop_top": "Górna krawędź (px)",
+          "crop_right": "Prawa krawędź (px)",
+          "crop_bottom": "Dolna krawędź (px)",
+          "confirm": "Zatwierdź to przycięcie i zapisz"
         }
       }
     },
     "error": {
       "cannot_connect": "Nie udało się pobrać zdjęcia z podanego adresu kamery.",
-      "invalid_crop": "Podana ramka przycięcia jest nieprawidłowa (sprawdź współrzędne względem rozmiaru zdjęcia).",
+      "invalid_crop": "Ramka przycięcia jest pusta albo wykracza poza granice zdjęcia - popraw współrzędne.",
       "unknown": "Nieoczekiwany błąd."
     },
     "abort": {

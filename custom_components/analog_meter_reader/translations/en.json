@@ -3,24 +3,31 @@
     "step": {
       "user": {
         "title": "Analog Meter Reader",
-        "description": "Enter the snapshot URL of the camera pointed at the meter, and the crop box (in pixels) around the digit strip.",
+        "description": "Enter the snapshot URL of the camera pointed at the meter. The next step shows a live preview of that image so you can calibrate the crop box.",
         "data": {
           "name": "Name",
           "camera_url": "Camera snapshot URL",
           "api_key": "Gemini API key",
           "device_class": "Meter type",
           "unit_of_measurement": "Unit",
-          "crop_left": "Crop: left edge (px)",
-          "crop_top": "Crop: top edge (px)",
-          "crop_right": "Crop: right edge (px)",
-          "crop_bottom": "Crop: bottom edge (px)",
           "flip_horizontal": "Flip the image horizontally"
+        }
+      },
+      "crop": {
+        "title": "Crop box calibration",
+        "description": "{image_preview}\n\nEnter the crop box coordinates (pixels) around the digit strip in the image above, save, and check the crop preview below. Repeat until the digits in the crop preview are readable - only then check \"Confirm\".",
+        "data": {
+          "crop_left": "Left edge (px)",
+          "crop_top": "Top edge (px)",
+          "crop_right": "Right edge (px)",
+          "crop_bottom": "Bottom edge (px)",
+          "confirm": "Confirm this crop and save"
         }
       }
     },
     "error": {
       "cannot_connect": "Could not fetch a snapshot from the given camera address.",
-      "invalid_crop": "The crop box is invalid (check the coordinates against the image size).",
+      "invalid_crop": "The crop box is empty or extends beyond the image bounds - fix the coordinates.",
       "unknown": "Unexpected error."
     },
     "abort": {

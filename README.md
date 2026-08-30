@@ -48,13 +48,18 @@ wartości).
 1. Skopiuj `custom_components/analog_meter_reader` do `<config>/custom_components/`.
 2. Zrestartuj Home Assistant.
 3. Ustawienia → Urządzenia i usługi → Dodaj integrację → "Analog Meter Reader".
-4. Podaj adres URL zwracający pojedyncze zdjęcie z kamery, klucz API Gemini,
-   typ licznika/jednostkę i ramkę przycięcia (w pikselach) wokół paska cyfr.
+4. **Krok 1:** adres URL zwracający pojedyncze zdjęcie z kamery, klucz API
+   Gemini, typ licznika/jednostka, czy zdjęcie wymaga odbicia lustrzanego.
+5. **Krok 2 — kalibracja z podglądem:** formularz pokazuje na żywo pełne
+   zdjęcie z kamery. Wpisujesz współrzędne (piksele) ramki wokół paska cyfr,
+   zapisujesz — formularz wraca z podglądem samego przycięcia, powiększonym
+   ×4 (dokładnie tak, jak trafia do AI). Poprawiasz współrzędne, aż cyfry na
+   podglądzie są czytelne, i dopiero wtedy zaznaczasz "Zatwierdź". Ramka poza
+   granicami zdjęcia jest odrzucana od razu, z komunikatem błędu, nie cichym
+   ucięciem.
 
-Ramkę przycięcia trzeba wykalibrować ręcznie na podstawie zdjęcia z kamery
-(np. w dowolnym edytorze grafiki sprawdź współrzędne rogów paska cyfr).
-Podczas dodawania integracji zdjęcie jest pobierane i przycinane od razu —
-zła ramka (poza granicami zdjęcia) zostanie odrzucona już na tym etapie.
+Nie trzeba niczego mierzyć w zewnętrznym edytorze grafiki — kalibracja
+dzieje się w całości w formularzu dodawania integracji.
 
 ## Ustawienia (Options Flow)
 

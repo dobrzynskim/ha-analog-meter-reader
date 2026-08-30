@@ -1,4 +1,9 @@
-"""Config flow dla integracji Analog Meter Reader."""
+"""Config flow dla integracji Analog Meter Reader.
+
+Dwa kroki: 'user' (dane połączenia) -> 'crop' (kalibracja ramki przycięcia
+z żywym podglądem zdjęcia z kamery i podglądem samego przycięcia po każdej
+próbie - iteracyjnie, aż użytkownik zaznaczy "Zatwierdź").
+"""
 from __future__ import annotations
 
 import logging
@@ -15,6 +20,7 @@ from .api import MeterReaderApiError, async_fetch_snapshot
 from .const import (
     CONF_API_KEY,
     CONF_CAMERA_URL,
+    CONF_CONFIRM,
     CONF_CROP_BOTTOM,
     CONF_CROP_LEFT,
     CONF_CROP_RIGHT,
@@ -26,6 +32,7 @@ from .const import (
     CONF_PROMPT,
     CONF_SCAN_INTERVAL_MINUTES,
     CONF_UNIT_OF_MEASUREMENT,
+    CROP_UPSCALE_FACTOR,
     DEFAULT_DEVICE_CLASS,
     DEFAULT_FLIP_HORIZONTAL,
     DEFAULT_MAX_STEP,
@@ -33,7 +40,7 @@ from .const import (
     DEFAULT_UNIT_OF_MEASUREMENT,
     DOMAIN,
 )
-from .image import crop_for_ocr, load_and_orient
+from .image import InvalidCropBox, crop_for_ocr, load_and_orient, to_data_uri
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -44,43 +51,9 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
         vol.Required(CONF_API_KEY): str,
         vol.Required(CONF_DEVICE_CLASS, default=DEFAULT_DEVICE_CLASS): vol.In(["water", "gas"]),
         vol.Required(CONF_UNIT_OF_MEASUREMENT, default=DEFAULT_UNIT_OF_MEASUREMENT): str,
-        vol.Required(CONF_CROP_LEFT): int,
-        vol.Required(CONF_CROP_TOP): int,
-        vol.Required(CONF_CROP_RIGHT): int,
-        vol.Required(CONF_CROP_BOTTOM): int,
         vol.Required(CONF_FLIP_HORIZONTAL, default=DEFAULT_FLIP_HORIZONTAL): bool,
     }
 )
-
-
-class CannotConnect(Exception):
-    """Nie udało się pobrać zdjęcia z podanego adresu kamery."""
-
-
-class InvalidCrop(Exception):
-    """Podana ramka przycięcia wykracza poza zdjęcie albo jest pusta."""
-
-
-async def _async_validate(hass: HomeAssistant, data: dict[str, Any]) -> None:
-    session = async_get_clientsession(hass)
-    try:
-        raw = await async_fetch_snapshot(session, data[CONF_CAMERA_URL])
-    except MeterReaderApiError as err:
-        raise CannotConnect from err
-
-    def _decode_and_crop() -> None:
-        image = load_and_orient(raw, flip_horizontal=data[CONF_FLIP_HORIZONTAL])
-        box = (data[CONF_CROP_LEFT], data[CONF_CROP_TOP], data[CONF_CROP_RIGHT], data[CONF_CROP_BOTTOM])
-        crop = crop_for_ocr(image, box, scale=1)
-        if crop.width <= 0 or crop.height <= 0:
-            raise InvalidCrop
-
-    try:
-        await hass.async_add_executor_job(_decode_and_crop)
-    except InvalidCrop:
-        raise
-    except Exception as err:  # noqa: BLE001
-        raise CannotConnect from err
 
 
 class AnalogMeterReaderConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -88,26 +61,96 @@ class AnalogMeterReaderConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     VERSION = 1
 
+    def __init__(self) -> None:
+        self._data: dict[str, Any] = {}
+        self._full_image = None  # PIL.Image, żywe między krokami tej samej sesji flow
+        self._last_crop_preview_uri: str | None = None
+
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         errors: dict[str, str] = {}
 
         if user_input is not None:
+            session = async_get_clientsession(self.hass)
             try:
-                await _async_validate(self.hass, user_input)
-            except CannotConnect:
+                raw = await async_fetch_snapshot(session, user_input[CONF_CAMERA_URL])
+                image = await self.hass.async_add_executor_job(
+                    load_and_orient, raw, user_input[CONF_FLIP_HORIZONTAL]
+                )
+            except MeterReaderApiError:
                 errors["base"] = "cannot_connect"
-            except InvalidCrop:
-                errors["base"] = "invalid_crop"
             except Exception:  # noqa: BLE001
-                _LOGGER.exception("Nieoczekiwany błąd podczas walidacji konfiguracji")
+                _LOGGER.exception("Nieoczekiwany błąd podczas pobierania zdjęcia z kamery")
                 errors["base"] = "unknown"
             else:
                 await self.async_set_unique_id(user_input[CONF_CAMERA_URL])
                 self._abort_if_unique_id_configured()
-                return self.async_create_entry(title=user_input[CONF_NAME], data=user_input)
+                self._data = dict(user_input)
+                self._full_image = image
+                return await self.async_step_crop()
 
         return self.async_show_form(
             step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
+        )
+
+    async def async_step_crop(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+        errors: dict[str, str] = {}
+        width, height = self._full_image.width, self._full_image.height
+
+        if user_input is not None:
+            box = (
+                user_input[CONF_CROP_LEFT],
+                user_input[CONF_CROP_TOP],
+                user_input[CONF_CROP_RIGHT],
+                user_input[CONF_CROP_BOTTOM],
+            )
+            try:
+                crop = await self.hass.async_add_executor_job(
+                    crop_for_ocr, self._full_image, box, CROP_UPSCALE_FACTOR
+                )
+                self._last_crop_preview_uri = await self.hass.async_add_executor_job(to_data_uri, crop)
+            except InvalidCropBox:
+                errors["base"] = "invalid_crop"
+            else:
+                if user_input.get(CONF_CONFIRM):
+                    self._data.update(
+                        {
+                            CONF_CROP_LEFT: box[0],
+                            CONF_CROP_TOP: box[1],
+                            CONF_CROP_RIGHT: box[2],
+                            CONF_CROP_BOTTOM: box[3],
+                        }
+                    )
+                    return self.async_create_entry(title=self._data[CONF_NAME], data=self._data)
+
+        defaults = user_input or {
+            CONF_CROP_LEFT: 0,
+            CONF_CROP_TOP: 0,
+            CONF_CROP_RIGHT: width,
+            CONF_CROP_BOTTOM: height,
+        }
+        schema = vol.Schema(
+            {
+                vol.Required(CONF_CROP_LEFT, default=defaults[CONF_CROP_LEFT]): int,
+                vol.Required(CONF_CROP_TOP, default=defaults[CONF_CROP_TOP]): int,
+                vol.Required(CONF_CROP_RIGHT, default=defaults[CONF_CROP_RIGHT]): int,
+                vol.Required(CONF_CROP_BOTTOM, default=defaults[CONF_CROP_BOTTOM]): int,
+                vol.Required(CONF_CONFIRM, default=False): bool,
+            }
+        )
+
+        full_preview_uri = await self.hass.async_add_executor_job(to_data_uri, self._full_image)
+        image_md = f"Pełne zdjęcie ({width}x{height}px):\n\n![Pełne zdjęcie]({full_preview_uri})"
+        if self._last_crop_preview_uri:
+            image_md += (
+                f"\n\n**Podgląd przycięcia (powiększony {CROP_UPSCALE_FACTOR}x"
+                f" - tak widzi to AI):**\n\n![Przycięcie]({self._last_crop_preview_uri})"
+            )
+
+        return self.async_show_form(
+            step_id="crop",
+            data_schema=schema,
+            errors=errors,
+            description_placeholders={"image_preview": image_md},
         )
 
     @staticmethod
