@@ -48,7 +48,9 @@ zamiast pliku + helpera.
     (Options Flow) — zmiana w jednym miejscu widoczna jest też w drugim,
     oba zapisują się do tego samego ustawienia i przetrwają restart HA.
 - **`button`** — "Wymuś odczyt teraz": natychmiastowe pobranie zdjęcia i
-  odczyt, bez czekania na kolejny zaplanowany cykl.
+  odczyt, bez czekania na kolejny zaplanowany cykl **i bez względu na
+  godziny ciszy** (świadomie omija to okno, w odróżnieniu od zwykłego
+  zaplanowanego cyklu).
 - **`text`** — godziny ciszy (początek/koniec), ta sama wartość co w
   Options Flow, tylko widoczna wprost na karcie urządzenia.
 

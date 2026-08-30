@@ -21,7 +21,8 @@ async def async_setup_entry(
 
 class MeterReaderForceRefresh(CoordinatorEntity[MeterReaderCoordinator], ButtonEntity):
     """Wymusza natychmiastowe pobranie zdjęcia i odczyt, bez czekania na
-    kolejny zaplanowany cykl (scan_interval_minutes)."""
+    kolejny zaplanowany cykl (scan_interval_minutes) i bez względu na
+    skonfigurowane godziny ciszy."""
 
     _attr_has_entity_name = True
     _attr_translation_key = "force_reading"
@@ -33,4 +34,4 @@ class MeterReaderForceRefresh(CoordinatorEntity[MeterReaderCoordinator], ButtonE
         self._attr_device_info = device_info(entry)
 
     async def async_press(self) -> None:
-        await self.coordinator.async_refresh()
+        await self.coordinator.async_force_refresh()

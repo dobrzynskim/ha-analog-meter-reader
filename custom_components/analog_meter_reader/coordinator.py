@@ -78,6 +78,7 @@ class MeterReaderCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self._last_good: float | None = None
         self._store_loaded = False
         self._consecutive_bad = 0
+        self._force_next = False
 
     async def _async_load_last_good(self) -> None:
         stored = await self._store.async_load()
@@ -97,16 +98,26 @@ class MeterReaderCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         if not self._store_loaded:
             await self._async_load_last_good()
 
+        force = self._force_next
+        self._force_next = False
+
         quiet_start = parse_hhmm(self._config.get(CONF_QUIET_HOURS_START))
         quiet_end = parse_hhmm(self._config.get(CONF_QUIET_HOURS_END))
-        if is_within_quiet_hours(dt_util.now().time(), quiet_start, quiet_end):
+        if not force and is_within_quiet_hours(dt_util.now().time(), quiet_start, quiet_end):
             # Godziny ciszy - świadomie pomijamy pobranie zdjęcia i zapytanie
             # do AI (to płatne zapytanie), nie tylko "nic nowego nie robimy".
-            # Zachowujemy ostatnie dane bez zmian, nie liczymy tego jako zły
-            # cykl (patrz _register_bad_cycle) - to nie jest niepewny/odrzucony
-            # odczyt, tylko świadoma decyzja o nieodpytywaniu.
+            # "force" (przycisk "Wymuś odczyt teraz") celowo omija to okno -
+            # to cały sens przycisku.
+            #
+            # UWAGA: zwracamy "value": self._last_good jawnie, nie tylko
+            # dict(self.data or {}) - self.data jest None przy pierwszym
+            # cyklu po restarcie (zanim cokolwiek zostanie ustawione), więc
+            # samo dict(None or {}) dawało pusty wynik i sensor pokazywał
+            # brak wartości, mimo że self._last_good było poprawnie wczytane
+            # ze Store linijkę wyżej. Złapane na żywo: po restarcie w oknie
+            # ciszy odczyt "znikał", zamiast pokazać ostatnią zapisaną wartość.
             _LOGGER.debug("W oknie ciszy (%s-%s) - pomijam odczyt", quiet_start, quiet_end)
-            return dict(self.data or {})
+            return {**(self.data or {}), "value": self._last_good}
 
         camera_entity_id = self._config.get(CONF_CAMERA_ENTITY_ID)
         try:
@@ -195,6 +206,13 @@ class MeterReaderCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         if self._consecutive_bad >= CONSECUTIVE_BAD_THRESHOLD:
             ir.async_delete_issue(self.hass, DOMAIN, self._drift_issue_id)
         self._consecutive_bad = 0
+
+    async def async_force_refresh(self) -> None:
+        """Wymusza odczyt teraz, ignorując godziny ciszy - w odróżnieniu od
+        zwykłego async_refresh() (np. wywołanego po zmianie opcji), który
+        powinien nadal respektować skonfigurowane okno ciszy."""
+        self._force_next = True
+        await self.async_refresh()
 
     async def async_set_manual_value(self, value: float) -> None:
         """Ręczna korekta z encji number - np. seria odrzuconych (podejrzanych)
