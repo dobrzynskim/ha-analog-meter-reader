@@ -1,0 +1,29 @@
+name: Release version check
+
+# Uruchamia się przy publikacji taga vX.Y.Z. HACS śledzi aktualizacje przez
+# porównanie taga release'u z manifest.json "version" - jeśli się rozjadą,
+# HACS pokazuje userom mylącą wersję (albo w ogóle nie widzi aktualizacji).
+# Ten workflow tego nie blokuje (tag już istnieje w momencie uruchomienia),
+# ale głośno i widocznie zawala, żeby rozjazd nie przeszedł niezauważony.
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Porównaj tag z manifest.json
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          MANIFEST_VERSION=$(python3 -c "import json; print(json.load(open('custom_components/analog_meter_reader/manifest.json'))['version'])")
+          echo "Tag: $TAG"
+          echo "manifest.json version: $MANIFEST_VERSION"
+          if [ "$TAG" != "$MANIFEST_VERSION" ]; then
+            echo "::error::Tag '$GITHUB_REF_NAME' nie zgadza się z manifest.json version '$MANIFEST_VERSION' - HACS śledzi aktualizacje po tym zestawieniu. Popraw manifest.json i wypchnij nowy tag."
+            exit 1
+          fi

@@ -1,0 +1,125 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Analog Meter Reader",
+        "description": "Podaj DOKŁADNIE JEDNO źródło obrazu: adres URL snapshotu kamery, albo istniejącą encję camera w HA (RTSP/ONVIF/Frigate/go2rtc/WebRTC - cokolwiek HA już potrafi zamienić w klatkę). W następnym kroku zobaczysz podgląd zdjęcia, żeby skalibrować ramkę przycięcia.",
+        "data": {
+          "name": "Nazwa",
+          "camera_url": "Adres URL snapshotu kamery (opcjonalnie)",
+          "camera_entity_id": "Encja kamery HA (opcjonalnie)",
+          "ai_provider": "Dostawca AI",
+          "api_key": "Klucz API dostawcy AI",
+          "api_base_url": "Adres URL API (tylko dla \"Własne / OpenAI-compatible\")",
+          "ai_model": "Model AI (puste = domyślny dla wybranego dostawcy)",
+          "device_class": "Typ licznika",
+          "unit_of_measurement": "Jednostka",
+          "flip_horizontal": "Odbij zdjęcie lustrzanie"
+        }
+      },
+      "crop": {
+        "title": "Kalibracja ramki przycięcia",
+        "description": "{image_preview}\n\nZdjęcie ma naniesioną siatkę współrzędnych co 50px (pomarańczowa) - odczytaj z niej piksele rogów paska cyfr. Wpisz je poniżej i zapisz: zobaczysz ramkę zaznaczoną na czerwono na pełnym zdjęciu oraz osobny podgląd samego przycięcia, powiększony tak, jak widzi go AI. Popraw współrzędne, aż cyfry będą czytelne - dopiero wtedy zaznacz \"Zatwierdź\".",
+        "data": {
+          "crop_left": "Lewa krawędź (px)",
+          "crop_top": "Górna krawędź (px)",
+          "crop_right": "Prawa krawędź (px)",
+          "crop_bottom": "Dolna krawędź (px)",
+          "confirm": "Zatwierdź to przycięcie i zapisz"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Nie udało się pobrać zdjęcia z podanego źródła.",
+      "choose_one_source": "Podaj dokładnie jedno źródło obrazu - albo URL snapshotu, albo encję kamery, nie oba naraz i nie żadne.",
+      "invalid_crop": "Ramka przycięcia jest pusta albo wykracza poza granice zdjęcia - popraw współrzędne.",
+      "unknown": "Nieoczekiwany błąd.",
+      "base_url_required": "Dla dostawcy \"Własne / OpenAI-compatible\" trzeba podać adres URL API."
+    },
+    "abort": {
+      "already_configured": "Ta kamera jest już skonfigurowana."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Ustawienia",
+        "data": {
+          "ai_provider": "Dostawca AI",
+          "api_key": "Klucz API dostawcy AI",
+          "api_base_url": "Adres URL API (tylko dla \"Własne / OpenAI-compatible\")",
+          "ai_model": "Model AI (puste = domyślny dla wybranego dostawcy)",
+          "scan_interval_minutes": "Częstotliwość odczytu (minuty)",
+          "max_step": "Maks. realistyczny wzrost między odczytami",
+          "whole_digit_color": "Kolor cyfr części całkowitej (domyślnie: black)",
+          "fraction_digit_color": "Kolor cyfr części ułamkowej (domyślnie: red)",
+          "prompt": "Własny prompt AI (puste = domyślny, zbudowany z kolorów cyfr powyżej)",
+          "quiet_hours_start": "Godziny ciszy - początek (GG:MM, puste = wyłączone)",
+          "quiet_hours_end": "Godziny ciszy - koniec (GG:MM)"
+        }
+      }
+    },
+    "error": {
+      "base_url_required": "Dla dostawcy \"Własne / OpenAI-compatible\" trzeba podać adres URL API."
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "suspicious_reading": {
+        "name": "Podejrzany odczyt"
+      },
+      "quiet_hours_active": {
+        "name": "W oknie ciszy"
+      }
+    },
+    "camera": {
+      "last_snapshot": {
+        "name": "Ostatnie zdjęcie"
+      }
+    },
+    "number": {
+      "manual_override": {
+        "name": "Ręczna korekta odczytu"
+      },
+      "scan_interval": {
+        "name": "Częstotliwość odczytu"
+      },
+      "max_step": {
+        "name": "Maks. realistyczny wzrost między odczytami"
+      }
+    },
+    "button": {
+      "force_reading": {
+        "name": "Wymuś odczyt teraz"
+      }
+    },
+    "text": {
+      "quiet_hours_start": {
+        "name": "Godziny ciszy 1 - początek"
+      },
+      "quiet_hours_end": {
+        "name": "Godziny ciszy 2 - koniec"
+      }
+    },
+    "sensor": {
+      "consecutive_bad_reads": {
+        "name": "Kolejne złe odczyty pod rząd"
+      }
+    }
+  },
+  "issues": {
+    "calibration_drift": {
+      "title": "Możliwy problem z kalibracją odczytu licznika",
+      "description": "Ostatnie {count} odczytów pod rząd zostało odrzuconych albo AI nie było ich pewne. To zwykle oznacza, że kamera się poruszyła, oświetlenie się zmieniło, albo ramka przycięcia przestała trafiać w pasek cyfr. Sprawdź obraz na encji `camera` tej integracji - jeśli cyfry nie są już widoczne w kadrze, popraw ramkę kartą Lovelace analog-meter-reader-crop-card (albo serwisem analog_meter_reader.set_crop_box) - nie trzeba usuwać i dodawać integracji ponownie."
+    }
+  },
+  "selector": {
+    "ai_provider": {
+      "options": {
+        "gemini": "Google Gemini",
+        "anthropic": "Anthropic Claude",
+        "openai_compatible": "Własne / OpenAI-compatible API"
+      }
+    }
+  }
+}

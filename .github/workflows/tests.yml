@@ -1,0 +1,31 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          # 3.12, nie 3.13 - to wersja, z którą lokalnie zweryfikowano
+          # pytest-homeassistant-custom-component (ciągnie za sobą konkretną
+          # wersję homeassistant jako zależność, więc nie zgadujemy zgodności).
+          python-version: "3.12"
+      - run: pip install pytest pytest-homeassistant-custom-component aiohttp Pillow
+      - name: Install home-assistant-frontend (dependency of __init__.py's add_extra_js_url)
+        # Wersja MUSI dokładnie zgadzać się z tą, której oczekuje zainstalowany
+        # pakiet homeassistant (frontend/manifest.json) - stąd czytamy ją
+        # stamtąd, zamiast trzymać osobną, mogącą się rozjechać stałą tutaj.
+        run: |
+          python -c "
+          import json, homeassistant.components.frontend as frontend, os
+          manifest_path = os.path.join(os.path.dirname(frontend.__file__), 'manifest.json')
+          requirement = json.load(open(manifest_path))['requirements'][0]
+          print(requirement)
+          " > frontend_requirement.txt
+          pip install "$(cat frontend_requirement.txt)"
+      - run: pytest tests/ -v

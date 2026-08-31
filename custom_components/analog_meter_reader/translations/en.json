@@ -1,0 +1,125 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Analog Meter Reader",
+        "description": "Provide EXACTLY ONE image source: a camera snapshot URL, or an existing HA camera entity (RTSP/ONVIF/Frigate/go2rtc/WebRTC - anything HA can already turn into a frame). The next step shows a live preview of that image so you can calibrate the crop box.",
+        "data": {
+          "name": "Name",
+          "camera_url": "Camera snapshot URL (optional)",
+          "camera_entity_id": "HA camera entity (optional)",
+          "ai_provider": "AI provider",
+          "api_key": "AI provider API key",
+          "api_base_url": "API base URL (only for \"Custom / OpenAI-compatible\")",
+          "ai_model": "AI model (empty = provider default)",
+          "device_class": "Meter type",
+          "unit_of_measurement": "Unit",
+          "flip_horizontal": "Flip the image horizontally"
+        }
+      },
+      "crop": {
+        "title": "Crop box calibration",
+        "description": "{image_preview}\n\nThe image has a coordinate grid overlaid every 50px (orange) - read the digit strip's corner pixels off it. Enter them below and save: you'll see the box highlighted in red on the full image plus a separate crop preview, enlarged the way the AI sees it. Adjust the coordinates until the digits are readable - only then check \"Confirm\".",
+        "data": {
+          "crop_left": "Left edge (px)",
+          "crop_top": "Top edge (px)",
+          "crop_right": "Right edge (px)",
+          "crop_bottom": "Bottom edge (px)",
+          "confirm": "Confirm this crop and save"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not fetch an image from the given source.",
+      "choose_one_source": "Provide exactly one image source - either the snapshot URL or the camera entity, not both and not neither.",
+      "invalid_crop": "The crop box is empty or extends beyond the image bounds - fix the coordinates.",
+      "unknown": "Unexpected error.",
+      "base_url_required": "The \"Custom / OpenAI-compatible\" provider requires an API base URL."
+    },
+    "abort": {
+      "already_configured": "This camera is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Settings",
+        "data": {
+          "ai_provider": "AI provider",
+          "api_key": "AI provider API key",
+          "api_base_url": "API base URL (only for \"Custom / OpenAI-compatible\")",
+          "ai_model": "AI model (empty = provider default)",
+          "scan_interval_minutes": "Reading frequency (minutes)",
+          "max_step": "Max. realistic increase between readings",
+          "whole_digit_color": "Whole-part digit color (default: black)",
+          "fraction_digit_color": "Fractional-part digit color (default: red)",
+          "prompt": "Custom AI prompt (empty = default, built from the digit colors above)",
+          "quiet_hours_start": "Quiet hours - start (HH:MM, empty = disabled)",
+          "quiet_hours_end": "Quiet hours - end (HH:MM)"
+        }
+      }
+    },
+    "error": {
+      "base_url_required": "The \"Custom / OpenAI-compatible\" provider requires an API base URL."
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "suspicious_reading": {
+        "name": "Suspicious reading"
+      },
+      "quiet_hours_active": {
+        "name": "Quiet hours active"
+      }
+    },
+    "camera": {
+      "last_snapshot": {
+        "name": "Last snapshot"
+      }
+    },
+    "number": {
+      "manual_override": {
+        "name": "Manual reading correction"
+      },
+      "scan_interval": {
+        "name": "Reading frequency"
+      },
+      "max_step": {
+        "name": "Max. realistic increase between readings"
+      }
+    },
+    "button": {
+      "force_reading": {
+        "name": "Force reading now"
+      }
+    },
+    "text": {
+      "quiet_hours_start": {
+        "name": "Quiet hours 1 - start"
+      },
+      "quiet_hours_end": {
+        "name": "Quiet hours 2 - end"
+      }
+    },
+    "sensor": {
+      "consecutive_bad_reads": {
+        "name": "Consecutive bad reads"
+      }
+    }
+  },
+  "issues": {
+    "calibration_drift": {
+      "title": "Possible meter reading calibration issue",
+      "description": "The last {count} readings in a row were rejected or the AI was unsure of them. This usually means the camera moved, lighting changed, or the crop box no longer lines up with the digit strip. Check the image on this integration's `camera` entity - if the digits are no longer in frame, fix the crop box with the analog-meter-reader-crop-card Lovelace card (or the analog_meter_reader.set_crop_box service) - no need to remove and re-add the integration."
+    }
+  },
+  "selector": {
+    "ai_provider": {
+      "options": {
+        "gemini": "Google Gemini",
+        "anthropic": "Anthropic Claude",
+        "openai_compatible": "Custom / OpenAI-compatible API"
+      }
+    }
+  }
+}

@@ -1,0 +1,48 @@
+set_crop_box:
+  name: Ustaw ramkę przycięcia
+  description: >-
+    Ustawia nową ramkę przycięcia (w pikselach zdjęcia z kamery licznika, po
+    ewentualnym odbiciu lustrzanym) dla wybranego urządzenia. Używane przez
+    towarzyszącą kartę Lovelace (analog-meter-reader-crop-card) do wizualnej
+    kalibracji przeciąganiem prostokąta - można też wywołać ręcznie.
+  target:
+    entity:
+      integration: analog_meter_reader
+      domain: camera
+  fields:
+    crop_left:
+      name: Lewa krawędź
+      description: Lewa krawędź ramki w pikselach.
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 100000
+          mode: box
+    crop_top:
+      name: Górna krawędź
+      description: Górna krawędź ramki w pikselach.
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 100000
+          mode: box
+    crop_right:
+      name: Prawa krawędź
+      description: Prawa krawędź ramki w pikselach.
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 100000
+          mode: box
+    crop_bottom:
+      name: Dolna krawędź
+      description: Dolna krawędź ramki w pikselach.
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 100000
+          mode: box
