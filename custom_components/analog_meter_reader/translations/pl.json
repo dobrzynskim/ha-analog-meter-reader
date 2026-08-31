@@ -8,7 +8,10 @@
           "name": "Nazwa",
           "camera_url": "Adres URL snapshotu kamery (opcjonalnie)",
           "camera_entity_id": "Encja kamery HA (opcjonalnie)",
-          "api_key": "Klucz API Gemini",
+          "ai_provider": "Dostawca AI",
+          "api_key": "Klucz API dostawcy AI",
+          "api_base_url": "Adres URL API (tylko dla \"Własne / OpenAI-compatible\")",
+          "ai_model": "Model AI (puste = domyślny dla wybranego dostawcy)",
           "device_class": "Typ licznika",
           "unit_of_measurement": "Jednostka",
           "flip_horizontal": "Odbij zdjęcie lustrzanie"
@@ -30,7 +33,8 @@
       "cannot_connect": "Nie udało się pobrać zdjęcia z podanego źródła.",
       "choose_one_source": "Podaj dokładnie jedno źródło obrazu - albo URL snapshotu, albo encję kamery, nie oba naraz i nie żadne.",
       "invalid_crop": "Ramka przycięcia jest pusta albo wykracza poza granice zdjęcia - popraw współrzędne.",
-      "unknown": "Nieoczekiwany błąd."
+      "unknown": "Nieoczekiwany błąd.",
+      "base_url_required": "Dla dostawcy \"Własne / OpenAI-compatible\" trzeba podać adres URL API."
     },
     "abort": {
       "already_configured": "Ta kamera jest już skonfigurowana."
@@ -41,40 +45,71 @@
       "init": {
         "title": "Ustawienia",
         "data": {
+          "ai_provider": "Dostawca AI",
+          "api_key": "Klucz API dostawcy AI",
+          "api_base_url": "Adres URL API (tylko dla \"Własne / OpenAI-compatible\")",
+          "ai_model": "Model AI (puste = domyślny dla wybranego dostawcy)",
           "scan_interval_minutes": "Częstotliwość odczytu (minuty)",
           "max_step": "Maks. realistyczny wzrost między odczytami",
           "prompt": "Własny prompt AI (puste = domyślny)",
           "quiet_hours_start": "Godziny ciszy - początek (GG:MM, puste = wyłączone)",
-          "quiet_hours_end": "Godziny ciszy - koniec (GG:MM)",
-          "gemini_model": "Model Gemini"
+          "quiet_hours_end": "Godziny ciszy - koniec (GG:MM)"
         }
       }
+    },
+    "error": {
+      "base_url_required": "Dla dostawcy \"Własne / OpenAI-compatible\" trzeba podać adres URL API."
     }
   },
   "entity": {
     "binary_sensor": {
-      "suspicious_reading": { "name": "Podejrzany odczyt" }
+      "suspicious_reading": {
+        "name": "Podejrzany odczyt"
+      }
     },
     "camera": {
-      "last_snapshot": { "name": "Ostatnie zdjęcie" }
+      "last_snapshot": {
+        "name": "Ostatnie zdjęcie"
+      }
     },
     "number": {
-      "manual_override": { "name": "Ręczna korekta odczytu" },
-      "scan_interval": { "name": "Częstotliwość odczytu" },
-      "max_step": { "name": "Maks. realistyczny wzrost między odczytami" }
+      "manual_override": {
+        "name": "Ręczna korekta odczytu"
+      },
+      "scan_interval": {
+        "name": "Częstotliwość odczytu"
+      },
+      "max_step": {
+        "name": "Maks. realistyczny wzrost między odczytami"
+      }
     },
     "button": {
-      "force_reading": { "name": "Wymuś odczyt teraz" }
+      "force_reading": {
+        "name": "Wymuś odczyt teraz"
+      }
     },
     "text": {
-      "quiet_hours_start": { "name": "Godziny ciszy 1 - początek" },
-      "quiet_hours_end": { "name": "Godziny ciszy 2 - koniec" }
+      "quiet_hours_start": {
+        "name": "Godziny ciszy 1 - początek"
+      },
+      "quiet_hours_end": {
+        "name": "Godziny ciszy 2 - koniec"
+      }
     }
   },
   "issues": {
     "calibration_drift": {
       "title": "Możliwy problem z kalibracją odczytu licznika",
       "description": "Ostatnie {count} odczytów pod rząd zostało odrzuconych albo AI nie było ich pewne. To zwykle oznacza, że kamera się poruszyła, oświetlenie się zmieniło, albo ramka przycięcia przestała trafiać w pasek cyfr. Sprawdź obraz na encji `camera` tej integracji - jeśli cyfry nie są już widoczne w kadrze, usuń i dodaj integrację ponownie, żeby przekalibrować ramkę."
+    }
+  },
+  "selector": {
+    "ai_provider": {
+      "options": {
+        "gemini": "Google Gemini",
+        "anthropic": "Anthropic Claude",
+        "openai_compatible": "Własne / OpenAI-compatible API"
+      }
     }
   }
 }

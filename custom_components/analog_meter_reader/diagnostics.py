@@ -7,11 +7,12 @@ from homeassistant.components.diagnostics import async_redact_data
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
-from .const import CONF_API_KEY, CONF_CAMERA_URL, DOMAIN
+from .const import CONF_API_BASE_URL, CONF_API_KEY, CONF_CAMERA_URL, DOMAIN
 
-# Klucz API i adres kamery (mógłby ujawnić adres IP/topologię sieci domowej)
-# trafiają często do publicznych zgłoszeń błędów - maskujemy oba.
-TO_REDACT = {CONF_API_KEY, CONF_CAMERA_URL}
+# Klucz API i adresy (kamery, oraz API self-hosted modeli - mogłyby ujawnić
+# IP/topologię sieci domowej) trafiają często do publicznych zgłoszeń błędów
+# - maskujemy wszystkie trzy.
+TO_REDACT = {CONF_API_KEY, CONF_CAMERA_URL, CONF_API_BASE_URL}
 
 
 async def async_get_config_entry_diagnostics(

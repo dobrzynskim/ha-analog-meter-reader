@@ -2,8 +2,10 @@
 
 Integracja Home Assistant, która odczytuje wskazanie **analogowego licznika**
 (wody, gazu — dowolnego z bębenkowym paskiem cyfr) ze zdjęcia kamery, przy
-pomocy AI vision (Gemini). Dla liczników bez żadnego API/łączności — jedyny
-sposób na wpięcie ich do Home Assistant to właśnie odczyt obrazu.
+pomocy AI vision (Gemini, Claude, albo dowolny model zgodny z OpenAI - w tym
+self-hosted, np. Ollama/LM Studio/vLLM). Dla liczników bez żadnego
+API/łączności — jedyny sposób na wpięcie ich do Home Assistant to właśnie
+odczyt obrazu.
 
 Źródłem obrazu może być zwykły URL snapshotu **albo dowolna istniejąca
 encja `camera` w HA** — RTSP, ONVIF, Frigate, go2rtc, WebRTC, cokolwiek, co
@@ -64,9 +66,9 @@ znowu pojawi się dobry odczyt.
 
 Co `scan_interval_minutes` (domyślnie 10 min): pobierz zdjęcie z kamery →
 ewentualnie odbij lustrzanie → przytnij do skonfigurowanej ramki wokół paska
-cyfr i powiększ ×4 → wyślij do Gemini Vision z promptem opisującym układ
-cyfr → sparsuj odpowiedź → zwaliduj względem ostatniego zaakceptowanego
-odczytu (licznik nigdy się nie cofa; zbyt duży skok w jednym cyklu = albo
+cyfr i powiększ ×4 → wyślij do skonfigurowanego dostawcy AI (Gemini/Claude/
+własne API) z promptem opisującym układ cyfr → sparsuj odpowiedź →
+zwaliduj względem ostatniego zaakceptowanego odczytu (licznik nigdy się nie cofa; zbyt duży skok w jednym cyklu = albo
 korekta przesuniętego przecinka, albo odrzucenie i pozostanie przy starej
 wartości).
 
@@ -77,8 +79,10 @@ wartości).
 3. Ustawienia → Urządzenia i usługi → Dodaj integrację → "Analog Meter Reader".
 4. **Krok 1:** dokładnie jedno źródło obrazu — albo adres URL zwracający
    pojedyncze zdjęcie z kamery, albo istniejąca encja `camera` w HA (wybór z
-   listy) — plus klucz API Gemini, typ licznika/jednostka, czy zdjęcie
-   wymaga odbicia lustrzanego.
+   listy) — plus dostawca AI (Gemini / Claude / własne API zgodne z
+   OpenAI), klucz API, opcjonalnie adres URL API (wymagany tylko dla
+   "własne API") i model, typ licznika/jednostka, czy zdjęcie wymaga
+   odbicia lustrzanego.
 5. **Krok 2 — kalibracja z podglądem:** formularz HA nie umożliwia
    interaktywnego przeciągania ramki na obrazku (brak JS/canvas w
    config_flow), więc zamiast tego pokazuje pełne zdjęcie z naniesioną
@@ -109,13 +113,15 @@ Bez zmiany kodu, przez **Konfiguruj** przy integracji:
   całkowicie pomija cykl (nie pobiera zdjęcia, nie pyta AI) i zachowuje
   ostatnią wartość. Obsługuje okno przechodzące przez północ (np. 23:00 →
   06:00). Puste pola = wyłączone, odpytywanie non-stop jak dotąd. Realnie
-  ogranicza liczbę (płatnych) zapytań do Gemini w porach, gdy zmiana
+  ogranicza liczbę (płatnych) zapytań do AI w porach, gdy zmiana
   odczytu jest mało prawdopodobna.
-- **model Gemini** (domyślnie `gemini-3.6-flash`) — konfigurowalny, nie
-  wpisany na sztywno w kodzie. Google regularnie wycofuje starsze modele
-  dla nowych kluczy API (tak stało się z `gemini-2.5-flash` w trakcie
-  pierwszego uruchomienia tej integracji - patrz historia commitów) - gdy
-  to się powtórzy, zmiana modelu nie wymaga edycji kodu ani redeployu.
+- **dostawca AI, klucz API, adres URL API i model** — edytowalne tutaj bez
+  ponownego dodawania integracji (i bez powtórnej kalibracji ramki). Modele
+  bywają wycofywane przez dostawców z dnia na dzień (tak stało się z
+  `gemini-2.5-flash` w trakcie pierwszego uruchomienia tej integracji -
+  patrz historia commitów) - zmiana dostawcy/modelu/klucza nie wymaga
+  edycji kodu ani redeployu, i (od tej wersji) nie wymaga nawet restartu
+  Home Assistant.
 
 ## Diagnostyka
 
@@ -125,8 +131,10 @@ sieci domowej) są automatycznie maskowane.
 
 ## Znane ograniczenia
 
-- Wymaga klucza API Gemini (darmowy tier ma limity zapytań/dzień — przy
-  częstym odpytywaniu warto to mieć na uwadze).
+- Wymaga klucza API wybranego dostawcy AI (Gemini/Claude - darmowe tiery
+  mają limity zapytań/dzień, warto to mieć na uwadze przy częstym
+  odpytywaniu; self-hosted "własne API" nie ma tego ograniczenia, ale
+  jakość odczytu zależy wtedy od jakości modelu, który tam wystawiasz).
 - Jakość odczytu zależy od ostrości/oświetlenia zdjęcia z kamery i
   poprawności ramki przycięcia — to nie jest deterministyczny OCR, tylko
   odpowiedź modelu językowego.

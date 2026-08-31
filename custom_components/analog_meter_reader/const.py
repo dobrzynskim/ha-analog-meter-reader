@@ -6,7 +6,10 @@ STORAGE_VERSION = 1
 CONF_NAME = "name"
 CONF_CAMERA_URL = "camera_url"
 CONF_CAMERA_ENTITY_ID = "camera_entity_id"
+CONF_AI_PROVIDER = "ai_provider"
 CONF_API_KEY = "api_key"
+CONF_API_BASE_URL = "api_base_url"
+CONF_AI_MODEL = "ai_model"
 CONF_FLIP_HORIZONTAL = "flip_horizontal"
 CONF_CROP_LEFT = "crop_left"
 CONF_CROP_TOP = "crop_top"
@@ -20,7 +23,17 @@ CONF_PROMPT = "prompt"
 CONF_CONFIRM = "confirm"
 CONF_QUIET_HOURS_START = "quiet_hours_start"
 CONF_QUIET_HOURS_END = "quiet_hours_end"
-CONF_GEMINI_MODEL = "gemini_model"
+CONF_GEMINI_MODEL = "gemini_model"  # legacy klucz opcji sprzed obsługi wielu dostawców - patrz CONF_AI_MODEL
+
+# Dostawcy AI obsługiwani przez api.py. "openai_compatible" pokrywa zarówno
+# sam OpenAI, jak i dowolny self-hosted model wystawiający zgodne API
+# (Ollama, LM Studio, vLLM, text-generation-webui...) - to jest właśnie
+# "swój model" z punktu widzenia użytkownika.
+AI_PROVIDER_GEMINI = "gemini"
+AI_PROVIDER_ANTHROPIC = "anthropic"
+AI_PROVIDER_OPENAI_COMPATIBLE = "openai_compatible"
+AI_PROVIDERS = [AI_PROVIDER_GEMINI, AI_PROVIDER_ANTHROPIC, AI_PROVIDER_OPENAI_COMPATIBLE]
+DEFAULT_AI_PROVIDER = AI_PROVIDER_GEMINI
 
 DEFAULT_FLIP_HORIZONTAL = True
 DEFAULT_DEVICE_CLASS = "water"
@@ -42,6 +55,16 @@ CONSECUTIVE_BAD_THRESHOLD = 6
 # z dnia na dzień z HTTP 404 "no longer available to new users") - sztywne
 # wpisanie jednej nazwy w kodzie gwarantuje, że kiedyś się to powtórzy.
 DEFAULT_GEMINI_MODEL = "gemini-3.6-flash"
+
+# Domyślny model per dostawca, używany gdy CONF_AI_MODEL jest puste. Dla
+# "openai_compatible" celowo brak sensownego uniwersalnego domyślnego modelu
+# (self-hosted serwery same decydują, jaki model mają wgrany) - pusty string
+# oznacza "wyślij bez pola model / niech serwer użyje swojego domyślnego".
+DEFAULT_MODEL_BY_PROVIDER = {
+    AI_PROVIDER_GEMINI: DEFAULT_GEMINI_MODEL,
+    AI_PROVIDER_ANTHROPIC: "claude-sonnet-5",
+    AI_PROVIDER_OPENAI_COMPATIBLE: "",
+}
 
 # Domyślny prompt dopasowany do liczników z czarnymi cyframi (pełne jednostki)
 # i czerwonymi cyframi (ułamek jednostki) na bębenkach - typowy układ liczników

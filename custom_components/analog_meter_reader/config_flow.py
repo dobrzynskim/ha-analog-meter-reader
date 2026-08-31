@@ -21,6 +21,11 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import TIMEOUT_SNAPSHOT_SECONDS, MeterReaderApiError, async_fetch_snapshot
 from .const import (
+    AI_PROVIDER_OPENAI_COMPATIBLE,
+    AI_PROVIDERS,
+    CONF_AI_MODEL,
+    CONF_AI_PROVIDER,
+    CONF_API_BASE_URL,
     CONF_API_KEY,
     CONF_CAMERA_ENTITY_ID,
     CONF_CAMERA_URL,
@@ -40,9 +45,9 @@ from .const import (
     CONF_SCAN_INTERVAL_MINUTES,
     CONF_UNIT_OF_MEASUREMENT,
     CROP_UPSCALE_FACTOR,
+    DEFAULT_AI_PROVIDER,
     DEFAULT_DEVICE_CLASS,
     DEFAULT_FLIP_HORIZONTAL,
-    DEFAULT_GEMINI_MODEL,
     DEFAULT_MAX_STEP,
     DEFAULT_SCAN_INTERVAL_MINUTES,
     DEFAULT_UNIT_OF_MEASUREMENT,
@@ -52,6 +57,21 @@ from .image import InvalidCropBox, crop_for_ocr, draw_calibration_overlay, load_
 
 _LOGGER = logging.getLogger(__name__)
 
+
+def _ai_provider_selector() -> selector.SelectSelector:
+    return selector.SelectSelector(
+        selector.SelectSelectorConfig(
+            options=AI_PROVIDERS,
+            translation_key="ai_provider",
+            mode=selector.SelectSelectorMode.DROPDOWN,
+        )
+    )
+
+
+def _api_key_selector() -> selector.TextSelector:
+    return selector.TextSelector(selector.TextSelectorConfig(type=selector.TextSelectorType.PASSWORD))
+
+
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_NAME, default="Wodomierz"): str,
@@ -59,7 +79,10 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
         vol.Optional(CONF_CAMERA_ENTITY_ID): selector.EntitySelector(
             selector.EntitySelectorConfig(domain="camera")
         ),
-        vol.Required(CONF_API_KEY): str,
+        vol.Required(CONF_AI_PROVIDER, default=DEFAULT_AI_PROVIDER): _ai_provider_selector(),
+        vol.Required(CONF_API_KEY): _api_key_selector(),
+        vol.Optional(CONF_API_BASE_URL): str,
+        vol.Optional(CONF_AI_MODEL): str,
         vol.Required(CONF_DEVICE_CLASS, default=DEFAULT_DEVICE_CLASS): vol.In(["water", "gas"]),
         vol.Required(CONF_UNIT_OF_MEASUREMENT, default=DEFAULT_UNIT_OF_MEASUREMENT): str,
         vol.Required(CONF_FLIP_HORIZONTAL, default=DEFAULT_FLIP_HORIZONTAL): bool,
@@ -89,6 +112,13 @@ class AnalogMeterReaderConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 # Dokładnie jedno źródło musi być podane - albo URL snapshotu,
                 # albo encja camera z HA (RTSP/ONVIF/Frigate/go2rtc/WebRTC...).
                 errors["base"] = "choose_one_source"
+            elif (
+                user_input[CONF_AI_PROVIDER] == AI_PROVIDER_OPENAI_COMPATIBLE
+                and not user_input.get(CONF_API_BASE_URL)
+            ):
+                # "Własne API" nie ma sensownego domyślnego adresu (to punkt
+                # całej opcji - self-hosted model pod dowolnym URL-em).
+                errors["base"] = "base_url_required"
             else:
                 session = async_get_clientsession(self.hass)
                 try:
@@ -208,12 +238,37 @@ class AnalogMeterReaderOptionsFlow(config_entries.OptionsFlow):
     """
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+        errors: dict[str, str] = {}
+        # Ustawienia dostawcy AI żyją w data (ustawiane przy pierwszej
+        # konfiguracji), ale wolno je nadpisać tutaj bez przechodzenia przez
+        # cały config flow (i ponowną kalibrację kadru) - np. zmiana klucza
+        # API albo przejście z Gemini na Claude/własny model.
+        merged = {**self.config_entry.data, **self.config_entry.options}
+
         if user_input is not None:
-            return self.async_create_entry(title="", data=user_input)
+            if (
+                user_input[CONF_AI_PROVIDER] == AI_PROVIDER_OPENAI_COMPATIBLE
+                and not user_input.get(CONF_API_BASE_URL)
+            ):
+                errors["base"] = "base_url_required"
+            else:
+                return self.async_create_entry(title="", data=user_input)
 
         options = self.config_entry.options
         schema = vol.Schema(
             {
+                vol.Required(
+                    CONF_AI_PROVIDER, default=merged.get(CONF_AI_PROVIDER, DEFAULT_AI_PROVIDER)
+                ): _ai_provider_selector(),
+                vol.Required(CONF_API_KEY, default=merged.get(CONF_API_KEY, "")): _api_key_selector(),
+                vol.Optional(CONF_API_BASE_URL, default=merged.get(CONF_API_BASE_URL, "")): str,
+                # CONF_GEMINI_MODEL jako ostatni fallback - żeby istniejący
+                # użytkownicy Gemini widzieli tu swój dotychczas ustawiony
+                # model zamiast pustego pola po aktualizacji.
+                vol.Optional(
+                    CONF_AI_MODEL,
+                    default=merged.get(CONF_AI_MODEL) or merged.get(CONF_GEMINI_MODEL, ""),
+                ): str,
                 vol.Required(
                     CONF_SCAN_INTERVAL_MINUTES,
                     default=options.get(CONF_SCAN_INTERVAL_MINUTES, DEFAULT_SCAN_INTERVAL_MINUTES),
@@ -228,9 +283,6 @@ class AnalogMeterReaderOptionsFlow(config_entries.OptionsFlow):
                 vol.Optional(
                     CONF_QUIET_HOURS_END, default=options.get(CONF_QUIET_HOURS_END, "")
                 ): str,
-                vol.Optional(
-                    CONF_GEMINI_MODEL, default=options.get(CONF_GEMINI_MODEL, DEFAULT_GEMINI_MODEL)
-                ): str,
             }
         )
-        return self.async_show_form(step_id="init", data_schema=schema)
+        return self.async_show_form(step_id="init", data_schema=schema, errors=errors)

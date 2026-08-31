@@ -24,11 +24,14 @@ from homeassistant.util import dt as dt_util
 from .api import (
     TIMEOUT_SNAPSHOT_SECONDS,
     MeterReaderApiError,
-    async_ask_gemini,
+    async_ask_ai,
     async_fetch_snapshot,
 )
 from .const import (
     CALIBRATION_DRIFT_ISSUE,
+    CONF_AI_MODEL,
+    CONF_AI_PROVIDER,
+    CONF_API_BASE_URL,
     CONF_API_KEY,
     CONF_CAMERA_ENTITY_ID,
     CONF_CAMERA_URL,
@@ -44,9 +47,10 @@ from .const import (
     CONF_QUIET_HOURS_START,
     CONSECUTIVE_BAD_THRESHOLD,
     CROP_UPSCALE_FACTOR,
+    DEFAULT_AI_PROVIDER,
     DEFAULT_FLIP_HORIZONTAL,
-    DEFAULT_GEMINI_MODEL,
     DEFAULT_MAX_STEP,
+    DEFAULT_MODEL_BY_PROVIDER,
     DEFAULT_PROMPT,
     DOMAIN,
     STORAGE_VERSION,
@@ -84,6 +88,32 @@ class MeterReaderCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         stored = await self._store.async_load()
         self._last_good = stored.get("last_good") if stored else None
         self._store_loaded = True
+
+    async def async_prime_from_storage(self) -> None:
+        """Ustaw dane startowe z ostatniej zapisanej wartości, bez czekania
+        na żywy cykl kamera+AI (sieć + płatne zapytanie do Gemini).
+
+        Wywoływane przy starcie/reloadzie integracji zamiast
+        async_config_entry_first_refresh() - dzięki temu encje pojawiają
+        się od razu z ostatnią znaną wartością, a prawdziwy odczyt robi
+        najbliższy zaplanowany cykl w tle (patrz async_setup_entry)."""
+        if not self._store_loaded:
+            await self._async_load_last_good()
+        self.async_set_updated_data({**(self.data or {}), "value": self._last_good})
+
+    def async_update_config(self, config: dict[str, Any], interval_minutes: int) -> None:
+        """Zastosuj nowe opcje (Options Flow) bez pełnego reloadu integracji.
+
+        _async_update_data czyta wszystko z self._config na żywo (prompt,
+        crop, max_step, godziny ciszy, model...), więc podmiana słownika
+        wystarczy - nie trzeba tworzyć nowego coordinatora ani przechodzić
+        przez unload/setup (co wcześniej wyzwalało zbędny, blokujący cykl
+        kamera+AI przy każdej zmianie ustawień)."""
+        self._config = config
+        new_interval = timedelta(minutes=interval_minutes)
+        if self.update_interval != new_interval:
+            self.update_interval = new_interval
+            self._schedule_refresh()
 
     @property
     def crop_box(self) -> tuple[int, int, int, int]:
@@ -144,11 +174,26 @@ class MeterReaderCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         full_bytes = await self.hass.async_add_executor_job(to_jpeg_bytes, image)
 
         prompt = self._config.get(CONF_PROMPT) or DEFAULT_PROMPT.format(uncertain_marker=UNCERTAIN_MARKER)
-        model = self._config.get(CONF_GEMINI_MODEL) or DEFAULT_GEMINI_MODEL
+        provider = self._config.get(CONF_AI_PROVIDER, DEFAULT_AI_PROVIDER)
+        # CONF_GEMINI_MODEL to legacy klucz sprzed obsługi wielu dostawców -
+        # trzymamy odczyt jako fallback, żeby istniejący użytkownicy Gemini
+        # nie stracili cicho swojego wybranego modelu po aktualizacji.
+        model = (
+            self._config.get(CONF_AI_MODEL)
+            or self._config.get(CONF_GEMINI_MODEL)
+            or DEFAULT_MODEL_BY_PROVIDER.get(provider, "")
+        )
+        base_url = self._config.get(CONF_API_BASE_URL)
 
         try:
-            text = await async_ask_gemini(
-                self._session, self._config[CONF_API_KEY], model, prompt, crop_bytes
+            text = await async_ask_ai(
+                self._session,
+                provider,
+                self._config[CONF_API_KEY],
+                model,
+                prompt,
+                crop_bytes,
+                base_url=base_url,
             )
         except MeterReaderApiError as err:
             raise UpdateFailed(str(err)) from err

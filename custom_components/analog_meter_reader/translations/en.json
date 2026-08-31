@@ -8,7 +8,10 @@
           "name": "Name",
           "camera_url": "Camera snapshot URL (optional)",
           "camera_entity_id": "HA camera entity (optional)",
-          "api_key": "Gemini API key",
+          "ai_provider": "AI provider",
+          "api_key": "AI provider API key",
+          "api_base_url": "API base URL (only for \"Custom / OpenAI-compatible\")",
+          "ai_model": "AI model (empty = provider default)",
           "device_class": "Meter type",
           "unit_of_measurement": "Unit",
           "flip_horizontal": "Flip the image horizontally"
@@ -30,7 +33,8 @@
       "cannot_connect": "Could not fetch an image from the given source.",
       "choose_one_source": "Provide exactly one image source - either the snapshot URL or the camera entity, not both and not neither.",
       "invalid_crop": "The crop box is empty or extends beyond the image bounds - fix the coordinates.",
-      "unknown": "Unexpected error."
+      "unknown": "Unexpected error.",
+      "base_url_required": "The \"Custom / OpenAI-compatible\" provider requires an API base URL."
     },
     "abort": {
       "already_configured": "This camera is already configured."
@@ -41,40 +45,71 @@
       "init": {
         "title": "Settings",
         "data": {
+          "ai_provider": "AI provider",
+          "api_key": "AI provider API key",
+          "api_base_url": "API base URL (only for \"Custom / OpenAI-compatible\")",
+          "ai_model": "AI model (empty = provider default)",
           "scan_interval_minutes": "Reading frequency (minutes)",
           "max_step": "Max. realistic increase between readings",
           "prompt": "Custom AI prompt (empty = default)",
           "quiet_hours_start": "Quiet hours - start (HH:MM, empty = disabled)",
-          "quiet_hours_end": "Quiet hours - end (HH:MM)",
-          "gemini_model": "Gemini model"
+          "quiet_hours_end": "Quiet hours - end (HH:MM)"
         }
       }
+    },
+    "error": {
+      "base_url_required": "The \"Custom / OpenAI-compatible\" provider requires an API base URL."
     }
   },
   "entity": {
     "binary_sensor": {
-      "suspicious_reading": { "name": "Suspicious reading" }
+      "suspicious_reading": {
+        "name": "Suspicious reading"
+      }
     },
     "camera": {
-      "last_snapshot": { "name": "Last snapshot" }
+      "last_snapshot": {
+        "name": "Last snapshot"
+      }
     },
     "number": {
-      "manual_override": { "name": "Manual reading correction" },
-      "scan_interval": { "name": "Reading frequency" },
-      "max_step": { "name": "Max. realistic increase between readings" }
+      "manual_override": {
+        "name": "Manual reading correction"
+      },
+      "scan_interval": {
+        "name": "Reading frequency"
+      },
+      "max_step": {
+        "name": "Max. realistic increase between readings"
+      }
     },
     "button": {
-      "force_reading": { "name": "Force reading now" }
+      "force_reading": {
+        "name": "Force reading now"
+      }
     },
     "text": {
-      "quiet_hours_start": { "name": "Quiet hours 1 - start" },
-      "quiet_hours_end": { "name": "Quiet hours 2 - end" }
+      "quiet_hours_start": {
+        "name": "Quiet hours 1 - start"
+      },
+      "quiet_hours_end": {
+        "name": "Quiet hours 2 - end"
+      }
     }
   },
   "issues": {
     "calibration_drift": {
       "title": "Possible meter reading calibration issue",
       "description": "The last {count} readings in a row were rejected or the AI was unsure of them. This usually means the camera moved, lighting changed, or the crop box no longer lines up with the digit strip. Check the image on this integration's `camera` entity - if the digits are no longer in frame, remove and re-add the integration to recalibrate the crop box."
+    }
+  },
+  "selector": {
+    "ai_provider": {
+      "options": {
+        "gemini": "Google Gemini",
+        "anthropic": "Anthropic Claude",
+        "openai_compatible": "Custom / OpenAI-compatible API"
+      }
     }
   }
 }
